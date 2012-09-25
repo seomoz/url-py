@@ -2,6 +2,8 @@ URL
 ===
 URL parsing done reasonably.
 
+[![Build Status](https://secure.travis-ci.org/seomoz/url-py.png)](http://travis-ci.org/seomoz/url-py)
+
 SEOmoz crawls. We crawl lots. In fact, you might say that crawling is our
 business.
 
