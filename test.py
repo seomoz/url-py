@@ -13,7 +13,6 @@ class Test(unittest.TestCase):
         examples = [
             ('?a=1&b=2&c=3&d=4', '?a=1&b=2&d=4'),   # Maintains order
             ('?a=1&&&&&&b=2'   , '?a=1&b=2'    ),   # Removes excess &'s
-            ('?a=1&?b=2'       , '?a=1&b=2'    ),   # Removes execess ?'s
             (';a=1;b=2;c=3;d=4', ';a=1;b=2;d=4'),   # Maintains order
             (';a=1;;;;;;b=2'   , ';a=1;b=2'    ),   # Removes excess ;'s
             (';foo_c=2'        , ';foo_c=2'    ),   # Not overzealous
@@ -71,6 +70,8 @@ class Test(unittest.TestCase):
             bad = base + bad
             good = base + good
             self.assertEqual(url.parse(bad).escape().utf8(), good)
+            # Escaping should also be idempotent
+            self.assertEqual(url.parse(bad).escape().escape().utf8(), good)
 
     def test_equiv(self):
         '''Make sure equivalent urls work correctly'''
@@ -79,7 +80,19 @@ class Test(unittest.TestCase):
         #   - default ports (https://foo.com/ == https://foo.com:443/)
         #   - capitalization of the hostname
         #   - capitalization of the escaped characters in the path
-        self.assertTrue(False)
+        examples = [
+            ('http://foo.com:'           , 'http://foo.com/'        ),
+            ('http://foo.com:80'         , 'http://foo.com/'        ),
+            ('https://foo.com:443'       , 'https://foo.com/'       ),
+            ('http://foo.COM/'           , 'http://foo.com/'        ),
+            ('http://foo.com?page'       , 'http://foo.com/?page'   ),
+            ('http://foo.com/?b=2&&&&a=1', 'http://foo.com/?a=1&b=2'),
+            ('http://foo.com/%A2%B3'     , 'http://foo.com/%a2%b3'  )
+        ]
+
+        for first, second in examples:
+            self.assertTrue(url.parse(first).equiv(url.parse(second)),
+                '%s should equiv(%s)' % (first, second))
 
     def test_punycode(self):
         '''Make sure punycode encoding works correctly'''
@@ -93,7 +106,10 @@ class Test(unittest.TestCase):
         ]
 
         for bad, good in examples:
-            self.assertEqual(url.parse(bad).punycode(), good)
+            self.assertEqual(url.parse(bad).escape().punycode().utf8(), good)
+            # Also make sure punycode is idempotent
+            self.assertEqual(
+                url.parse(bad).escape().punycode().punycode().utf8(), good)
 
     def test_canonical(self):
         '''Correctly canonicalizes urls'''
@@ -120,19 +136,35 @@ class Test(unittest.TestCase):
             good = base + good
             self.assertEqual(url.parse(bad).defrag().utf8(), good)
 
-    def unpunycode(self):
+    def test_unpunycode(self):
         '''Unpunycode a url'''
         examples = [
-            (u'http://www.kündigen.de',
+            (u'http://www.kündigen.de/',
                 'http://www.xn--kndigen-n2a.de/'),
-            (u'http://россия.иком.museum',
+            (u'http://россия.иком.museum/',
                 'http://xn--h1alffa9f.xn--h1aegh.museum/'),
             (u'http://россия.иком.museum/испытание.html',
                 'http://xn--h1alffa9f.xn--h1aegh.museum/%D0%B8%D1%81%D0%BF%D1%8B%D1%82%D0%B0%D0%BD%D0%B8%D0%B5.html')
         ]
 
         for uni, puny in examples:
-            self.assertEqual(url.parse(puny).unicode(), uni)
+            self.assertEqual(
+                url.parse(puny).unescape().unpunycode().unicode(), uni)
+
+    def test_relative(self):
+        '''Test relative url parsing'''
+        base = url.parse('http://testing.com/a/b/c')
+        examples = [
+            ('../foo'            , 'http://testing.com/a/b/foo'  ),
+            ('./foo'             , 'http://testing.com/a/b/c/foo'),
+            ('foo'               , 'http://testing.com/a/b/c/foo'),
+            ('/foo'              , 'http://testing.com/foo'      ),
+            ('http://foo.com/bar', 'http://foo.com/bar'          )
+        ]
+
+        for rel, absolute in examples:
+            self.assertEqual(base.relative(rel), absolute)
+
 
 if __name__ == '__main__':
     unittest.main()
