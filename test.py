@@ -81,18 +81,35 @@ class Test(unittest.TestCase):
         #   - capitalization of the hostname
         #   - capitalization of the escaped characters in the path
         examples = [
-            ('http://foo.com:'           , 'http://foo.com/'        ),
-            ('http://foo.com:80'         , 'http://foo.com/'        ),
-            ('https://foo.com:443'       , 'https://foo.com/'       ),
-            ('http://foo.COM/'           , 'http://foo.com/'        ),
-            ('http://foo.com?page'       , 'http://foo.com/?page'   ),
-            ('http://foo.com/?b=2&&&&a=1', 'http://foo.com/?a=1&b=2'),
-            ('http://foo.com/%A2%B3'     , 'http://foo.com/%a2%b3'  )
+            ('http://foo.com:'           , 'http://foo.com/'               ),
+            ('http://foo.com:80'         , 'http://foo.com/'               ),
+            ('https://foo.com:443'       , 'https://foo.com/'              ),
+            ('http://foo.COM/'           , 'http://foo.com/'               ),
+            ('http://foo.com?page'       , 'http://foo.com/?page'          ),
+            ('http://foo.com/?b=2&&&&a=1', 'http://foo.com/?a=1&b=2'       ),
+            ('http://foo.com/%A2%B3'     , 'http://foo.com/%a2%b3'         ),
+            (u'http://www.kündigen.de/'  , 'http://www.xn--kndigen-n2a.de/'),
+            (u'http://www.kündiGen.DE/'  , 'http://www.xn--kndigen-n2a.de/'),
         ]
 
         for first, second in examples:
             self.assertTrue(url.parse(first).equiv(url.parse(second)),
                 '%s should equiv(%s)' % (first, second))
+
+        # Now some examples that should /not/ pass
+        examples = [
+            ('http://foo.com:'           , 'http://foo.co.uk/'             ),
+            ('http://foo.com:8080'       , 'http://foo.com/'               ),
+            ('https://foo.com:4430'      , 'https://foo.com/'              ),
+            ('http://foo.com?page&foo'   , 'http://foo.com/?page'          ),
+            ('http://foo.com/?b=2&c&a=1' , 'http://foo.com/?a=1&b=2'       ),
+            ('http://foo.com/%A2%B3%C3'  , 'http://foo.com/%a2%b3'         ),
+            (u'http://www.kündïgen.de/'  , 'http://www.xn--kndigen-n2a.de/'),
+        ]
+
+        for first, second in examples:
+            self.assertFalse(url.parse(first).equiv(url.parse(second)),
+                '%s should not equiv(%s)' % (first, second))
 
     def test_punycode(self):
         '''Make sure punycode encoding works correctly'''
@@ -155,15 +172,15 @@ class Test(unittest.TestCase):
         '''Test relative url parsing'''
         base = url.parse('http://testing.com/a/b/c')
         examples = [
-            ('../foo'            , 'http://testing.com/a/b/foo'  ),
-            ('./foo'             , 'http://testing.com/a/b/c/foo'),
-            ('foo'               , 'http://testing.com/a/b/c/foo'),
+            ('../foo'            , 'http://testing.com/a/foo'  ),
+            ('./foo'             , 'http://testing.com/a/b/foo'),
+            ('foo'               , 'http://testing.com/a/b/foo'),
             ('/foo'              , 'http://testing.com/foo'      ),
             ('http://foo.com/bar', 'http://foo.com/bar'          )
         ]
 
         for rel, absolute in examples:
-            self.assertEqual(base.relative(rel), absolute)
+            self.assertEqual(base.relative(rel).utf8(), absolute)
 
 
 if __name__ == '__main__':

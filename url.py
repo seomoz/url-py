@@ -15,6 +15,12 @@ UTF8 = codecs.lookup('utf-8')
 ASCII = codecs.lookup('ascii')
 W1252 = codecs.lookup('windows-1252')
 
+# The default ports associated with each scheme
+PORTS = {
+    'http': 80,
+    'https': 443
+}
+
 
 def parse(url, encoding='utf-8'):
     '''Parse the provided url string and return an URL object'''
@@ -59,12 +65,38 @@ class URL(object):
 
     def equiv(self, other):
         '''Return true if this url is equivalent to another'''
-        pass
+        if isinstance(other, basestring):
+            _other = self.parse(other, 'utf-8')
+        else:
+            _other = self.parse(other.utf8(), 'utf-8')
+
+        _self = self.parse(self.utf8(), 'utf-8')
+        _self.lower().canonical().defrag().abspath().escape().punycode()
+        _other.lower().canonical().defrag().abspath().escape().punycode()
+
+        result = (
+            _self._scheme == _other._scheme and
+            _self._host   == _other._host   and
+            _self._path   == _other._path   and
+            _self._params == _other._params and
+            _self._query  == _other._query)
+
+        if result:
+            if _self._port and not _other._port:
+                # Make sure _self._port is the default for the scheme
+                return _self._port == PORTS.get(_self._scheme, None)
+            elif _other._port and not _self._port:
+                # Make sure _other._port is the default for the scheme
+                return _other._port == PORTS.get(_other._scheme, None)
+            else:
+                return _self._port == _other._port
+        else:
+            return False
 
     def __eq__(self, other):
         '''Return true if this url is /exactly/ equal to another'''
         if isinstance(other, basestring):
-            return self.__eq__(self.parse(other))
+            return self.__eq__(self.parse(other, 'utf-8'))
         return (
             self._scheme   == other._scheme and
             self._host     == other._host   and
@@ -146,15 +178,20 @@ class URL(object):
         '''Return the url in an arbitrary encoding'''
         netloc = self._host
         if self._port:
-            netloc += (':' + self._port)
+            netloc += (':' + str(self._port))
 
         result = urlparse.urlunparse((self._scheme, netloc, self._path,
             self._params, self._query, self._fragment))
         return result.decode('utf-8').encode(encoding)
 
-    def relative(self, path):
+    def relative(self, path, encoding='utf-8'):
         '''Evaluate the new path relative to the current url'''
-        pass
+        if isinstance(path, unicode):
+            newurl = urlparse.urljoin(self.utf8(), path.encode('utf-8'))
+        else:
+            newurl = urlparse.urljoin(self.utf8(),
+                path.decode(encoding).encode('utf-8'))
+        return URL.parse(newurl, 'utf-8')
 
     def punycode(self):
         '''Convert to punycode hostname'''

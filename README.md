@@ -118,7 +118,8 @@ you can unescape the path:
 ----------
 Evaluate a relative path given a base url:
 
-    Sorry, not implemented quite yet
+    >>> url.parse('http://foo.com/a/b/c').relative('../foo').utf8()
+    'http://foo.com/a/foo'
 
 `punycode`
 ----------
