@@ -194,23 +194,6 @@ class Test(unittest.TestCase):
             self.assertEqual(repr(url.parse(toparse)),
                 '<url.URL object "%s" >' % strng)
 
-    def test_punycode(self):
-        '''Make sure punycode encoding works correctly'''
-        examples = [
-            (u'http://www.kündigen.de',
-                'http://www.xn--kndigen-n2a.de/'),
-            (u'http://россия.иком.museum',
-                'http://xn--h1alffa9f.xn--h1aegh.museum/'),
-            (u'http://россия.иком.museum/испытание.html',
-                'http://xn--h1alffa9f.xn--h1aegh.museum/%D0%B8%D1%81%D0%BF%D1%8B%D1%82%D0%B0%D0%BD%D0%B8%D0%B5.html')
-        ]
-
-        for bad, good in examples:
-            self.assertEqual(url.parse(bad).escape().punycode().utf8(), good)
-            # Also make sure punycode is idempotent
-            self.assertEqual(
-                url.parse(bad).escape().punycode().punycode().utf8(), good)
-
     def test_canonical(self):
         '''Correctly canonicalizes urls'''
         examples = [
@@ -236,8 +219,8 @@ class Test(unittest.TestCase):
             good = base + good
             self.assertEqual(url.parse(bad).defrag().utf8(), good)
 
-    def test_unpunycode(self):
-        '''Unpunycode a url'''
+    def test_punycode(self):
+        '''Make sure punycode encoding works correctly'''
         examples = [
             (u'http://www.kündigen.de/',
                 'http://www.xn--kndigen-n2a.de/'),
@@ -248,8 +231,23 @@ class Test(unittest.TestCase):
         ]
 
         for uni, puny in examples:
+            self.assertEqual(url.parse(uni).escape().punycode().utf8(), puny)
+            # Also make sure punycode is idempotent
+            self.assertEqual(
+                url.parse(uni).escape().punycode().punycode().utf8(), puny)
+            # Make sure that we can reverse the procedure correctly
+            self.assertEqual(
+                url.parse(uni).escape().punycode().unpunycode().unescape(),
+                uni)
+            # And we get what we'd expect going the opposite direction
             self.assertEqual(
                 url.parse(puny).unescape().unpunycode().unicode(), uni)
+
+        # Make sure that we can't punycode or unpunycode relative urls
+        examples = ['foo', '../foo', '/bar/foo']
+        for relative in examples:
+            self.assertRaises(TypeError, url.parse(relative).punycode)
+            self.assertRaises(TypeError, url.parse(relative).unpunycode)
 
     def test_relative(self):
         '''Test relative url parsing'''
@@ -277,6 +275,18 @@ class Test(unittest.TestCase):
             bad = base + bad
             good = base + good
             self.assertEqual(url.parse(bad).sanitize().utf8(), good)
+
+    def test_absolute(self):
+        '''Can it recognize if it's a relative or absolute url?'''
+        examples = [
+            ('http://foo.com/bar', True ),
+            ('foo/'              , False),
+            ('http://foo.com'    , True ),
+            ('/foo/bar/../'      , False)
+        ]
+
+        for query, result in examples:
+            self.assertEqual(url.parse(query).absolute(), result)
 
 
 if __name__ == '__main__':

@@ -198,15 +198,6 @@ class URL(object):
         self._path = urllib.unquote(self._path)
         return self
 
-    # Return string versions of the url
-    def unicode(self):
-        '''Return a unicode version of this url'''
-        return self.encode('utf-8').decode('utf-8')
-
-    def utf8(self):
-        '''Return a utf-8 version of this url'''
-        return self.encode('utf-8')
-
     def encode(self, encoding):
         '''Return the url in an arbitrary encoding'''
         netloc = self._host
@@ -228,10 +219,35 @@ class URL(object):
 
     def punycode(self):
         '''Convert to punycode hostname'''
-        self._host = IDNA.encode(self._host.decode('utf-8'))[0]
-        return self
+        if self._host:
+            self._host = IDNA.encode(self._host.decode('utf-8'))[0]
+            return self
+        raise TypeError('Cannot punycode a relative url')
 
     def unpunycode(self):
         '''Convert to an unpunycoded hostname'''
-        self._host = IDNA.decode(self._host.decode('utf-8'))[0].encode('utf-8')
-        return self
+        if self._host:
+            self._host = IDNA.decode(
+                self._host.decode('utf-8'))[0].encode('utf-8')
+            return self
+        raise TypeError('Cannot unpunycode a relative url')
+
+    ###########################################################################
+    # Information about the type of url it is
+    ###########################################################################
+    def absolute(self):
+        '''Return True if this is a fully-qualified URL with a hostname and
+        everything'''
+        return bool(self._host)
+
+    ###########################################################################
+    # Get a string representation. These methods can't be chained, as they
+    # return strings
+    ###########################################################################
+    def unicode(self):
+        '''Return a unicode version of this url'''
+        return self.encode('utf-8').decode('utf-8')
+
+    def utf8(self):
+        '''Return a utf-8 version of this url'''
+        return self.encode('utf-8')
