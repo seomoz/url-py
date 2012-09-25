@@ -55,6 +55,15 @@ This equivalence test takes default ports for common schemes into account (so
 if both urls are the same scheme, but one explicitly specifies the default
 port), punycoding, case of the host name, and parameter order.
 
+Absolute URLs
+=============
+You can perform many operations on relative urls (those without a hostname),
+but punycoding and unpunycoding are not among them. You can also tell whether
+or not a url is absolute:
+
+    a = url.parse('foo/bar.html')
+    assert(not a.absolute())
+
 Chaining
 ========
 Many of the methods on the `URL` class can be chained to produce a number of
