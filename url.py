@@ -1,6 +1,25 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 #
-# Much of this code was written by @DavidBarts
+# Copyright (c) 2012 SEOmoz
+#
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+# LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 '''This is a module for dealing with urls. In particular, sanitizing them.'''
 
@@ -131,10 +150,10 @@ class URL(object):
     def abspath(self):
         '''Clear out any '..' and excessive slashes from the path'''
         # Remove double forward-slashes from the path
-        self._path = re.sub(r'\/{2,}', '/', self._path)
+        path = re.sub(r'\/{2,}', '/', self._path)
         # With that done, go through and remove all the relative references
         unsplit = []
-        for part in self._path.split('/'):
+        for part in path.split('/'):
             # If we encounter the parent directory, and there's
             # a segment to pop off, then we should pop it off.
             if part == '..' and (not unsplit or unsplit.pop() != None):
@@ -143,7 +162,12 @@ class URL(object):
                 unsplit.append(part)
 
         # With all these pieces, assemble!
-        self._path = '/'.join(unsplit)
+        if self._path.endswith('.'):
+            # If the path ends with a period, then it refers to a directory,
+            # not a file path
+            self._path = '/'.join(unsplit) + '/'
+        else:
+            self._path = '/'.join(unsplit)
         return self
 
     def lower(self):

@@ -48,7 +48,13 @@ class Test(unittest.TestCase):
             ('../../../c'      , 'c'            ),
             ('./hello'         , 'hello'        ),
             ('./././hello'     , 'hello'        ),
-            ('a/b/c/'          , 'a/b/c/'       )
+            ('a/b/c/'          , 'a/b/c/'       ),
+            ('a/b/c/..'        , 'a/b/'         ),
+            ('a/b/.'           , 'a/b/'         ),
+            ('a/b/./././'      , 'a/b/'         ),
+            ('a/b/../'         , 'a/'           ),
+            ('.'               , ''             ),
+            ('../../..'        , ''             )
         ]
 
         base = 'http://testing.com/'
@@ -88,6 +94,7 @@ class Test(unittest.TestCase):
             ('http://foo.com?page'       , 'http://foo.com/?page'          ),
             ('http://foo.com/?b=2&&&&a=1', 'http://foo.com/?a=1&b=2'       ),
             ('http://foo.com/%A2%B3'     , 'http://foo.com/%a2%b3'         ),
+            ('http://foo.com/a/../b/.'   , 'http://foo.com/b/'             ),
             (u'http://www.kündigen.de/'  , 'http://www.xn--kndigen-n2a.de/'),
             (u'http://www.kündiGen.DE/'  , 'http://www.xn--kndigen-n2a.de/'),
         ]
@@ -95,6 +102,7 @@ class Test(unittest.TestCase):
         for first, second in examples:
             self.assertTrue(url.parse(first).equiv(url.parse(second)),
                 '%s should equiv(%s)' % (first, second))
+            self.assertNotEqual(url.parse(first), url.parse(second))
 
         # Now some examples that should /not/ pass
         examples = [
@@ -110,6 +118,7 @@ class Test(unittest.TestCase):
         for first, second in examples:
             self.assertFalse(url.parse(first).equiv(url.parse(second)),
                 '%s should not equiv(%s)' % (first, second))
+            self.assertNotEqual(url.parse(first), url.parse(second))
 
     def test_punycode(self):
         '''Make sure punycode encoding works correctly'''
