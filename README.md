@@ -36,6 +36,25 @@ of URL you're after, and then call a final method to give you a string.
     # Give me the absolute path url as some encoding
     url.parse(...).abspath().encode('some encoding')
 
+URL Equivalence
+===============
+URL objects compared with `==` are interpreted very strictly, but for a more
+lax interpretation, consider using `equiv` to test if two urls are functionally
+equivalent:
+
+    a = url.parse('https://föo.com:443/a/../b/.?b=2&&&&&&a=1')
+    b = url.parse('https://xn--fo-fka.COM/b/?a=1&b=2')
+
+    # These urls are not equal
+    assert(a != b)
+    # But they are equivalent
+    assert(a.equiv(b))
+    assert(b.equiv(a))
+
+This equivalence test takes default ports for common schemes into account (so
+if both urls are the same scheme, but one explicitly specifies the default
+port), punycoding, case of the host name, and parameter order.
+
 Chaining
 ========
 Many of the methods on the `URL` class can be chained to produce a number of
@@ -158,6 +177,16 @@ before the `b` in the second version).
 
 If not in the above example, what about in `?????a=1`? Should the resulting
 query string be a mere `?a=1`?
+
+Properties
+----------
+I'd like to support lazily-evaluated properties like `hostname`, `netloc`, etc.
+
+Dictionary Access
+-----------------
+I'd like to support dictionary-style access to parameters and query arguments,
+though I'm not sure how to best to it. My current thinking is that there will
+be one way of getting params, one for queries, and then one for either.
 
 Authors
 =======
