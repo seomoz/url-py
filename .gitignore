@@ -2,3 +2,4 @@
 build/
 dist/
 url.egg-info/
+.coverage

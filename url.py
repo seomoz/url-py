@@ -125,6 +125,15 @@ class URL(object):
             self._query    == other._query  and
             self._fragment == other._fragment)
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __str__(self):
+        return self.utf8()
+
+    def __repr__(self):
+        return '<url.URL object "%s" >' % self.utf8()
+
     def canonical(self):
         '''Canonicalize this url. This includes reordering parameters and args
         to have a consistent ordering'''

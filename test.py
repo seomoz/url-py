@@ -54,7 +54,8 @@ class Test(unittest.TestCase):
             ('a/b/./././'      , 'a/b/'         ),
             ('a/b/../'         , 'a/'           ),
             ('.'               , ''             ),
-            ('../../..'        , ''             )
+            ('../../..'        , ''             ),
+            ('////foo'         , 'foo'          )
         ]
 
         base = 'http://testing.com/'
@@ -87,11 +88,8 @@ class Test(unittest.TestCase):
         #   - capitalization of the hostname
         #   - capitalization of the escaped characters in the path
         examples = [
-            ('http://foo.com:'           , 'http://foo.com/'               ),
             ('http://foo.com:80'         , 'http://foo.com/'               ),
             ('https://foo.com:443'       , 'https://foo.com/'              ),
-            ('http://foo.COM/'           , 'http://foo.com/'               ),
-            ('http://foo.com?page'       , 'http://foo.com/?page'          ),
             ('http://foo.com/?b=2&&&&a=1', 'http://foo.com/?a=1&b=2'       ),
             ('http://foo.com/%A2%B3'     , 'http://foo.com/%a2%b3'         ),
             ('http://foo.com/a/../b/.'   , 'http://foo.com/b/'             ),
@@ -100,9 +98,41 @@ class Test(unittest.TestCase):
         ]
 
         for first, second in examples:
+            # Equiv with another URL object
             self.assertTrue(url.parse(first).equiv(url.parse(second)),
                 '%s should equiv(%s)' % (first, second))
-            self.assertNotEqual(url.parse(first), url.parse(second))
+            # Equiv with a string
+            self.assertTrue(url.parse(first).equiv(second),
+                '%s should equiv(%s)' % (first, second))
+            # Make sure it's also transitive
+            self.assertTrue(url.parse(second).equiv(url.parse(first)),
+                '%s should equiv(%s)' % (second, first))
+            # Transitive with string arg
+            self.assertTrue(url.parse(second).equiv(first),
+                '%s should equiv(%s)' % (second, first))
+            # Should be equivalent to self
+            self.assertTrue(url.parse(first).equiv(first),
+                '%s should equiv itself' % first)
+            self.assertTrue(url.parse(second).equiv(second),
+                '%s should equiv itself' % second)
+
+            # None of these examples should evaluate as strictly equal
+            self.assertNotEqual(url.parse(first), url.parse(second),
+                'URL(%s) should not equal URL(%s)' % (first, second))
+            # Using a string
+            self.assertNotEqual(url.parse(first), second,
+                'URL(%s) should not equal %s' % (first, second))
+            # Transitive
+            self.assertNotEqual(url.parse(second), url.parse(first),
+                'URL(%s) should not equal URL(%s)' % (second, first))
+            # Using a string, transitive
+            self.assertNotEqual(url.parse(second), first,
+                'URL(%s) should not equal %s' % (second, first))
+            # Should equal self
+            self.assertEqual(url.parse(first), first,
+                'URL(%s) should equal itself' % first)
+            self.assertEqual(url.parse(second), second,
+                'URL(%s) should equal itself' % second)
 
         # Now some examples that should /not/ pass
         examples = [
@@ -116,9 +146,53 @@ class Test(unittest.TestCase):
         ]
 
         for first, second in examples:
+            # Equiv with another URL object
             self.assertFalse(url.parse(first).equiv(url.parse(second)),
                 '%s should not equiv(%s)' % (first, second))
-            self.assertNotEqual(url.parse(first), url.parse(second))
+            # Equiv with a string
+            self.assertFalse(url.parse(first).equiv(second),
+                '%s should not equiv(%s)' % (first, second))
+            # Make sure it's also transitive
+            self.assertFalse(url.parse(second).equiv(url.parse(first)),
+                '%s should not equiv(%s)' % (second, first))
+            # Transitive with string arg
+            self.assertFalse(url.parse(second).equiv(first),
+                '%s should not equiv(%s)' % (second, first))
+            # Should be equivalent to self
+            self.assertTrue(url.parse(first).equiv(first),
+                '%s should equiv itself' % first)
+            self.assertTrue(url.parse(second).equiv(second),
+                '%s should equiv itself' % second)
+
+            # None of these examples should evaluate as strictly equal
+            self.assertNotEqual(url.parse(first), url.parse(second),
+                'URL(%s) should not equal URL(%s)' % (first, second))
+            # Using a string
+            self.assertNotEqual(url.parse(first), second,
+                'URL(%s) should not equal %s' % (first, second))
+            # Transitive
+            self.assertNotEqual(url.parse(second), url.parse(first),
+                'URL(%s) should not equal URL(%s)' % (second, first))
+            # Using a string, transitive
+            self.assertNotEqual(url.parse(second), first,
+                'URL(%s) should not equal %s' % (second, first))
+            # Should equal self
+            self.assertEqual(url.parse(first), first,
+                'URL(%s) should equal itself' % first)
+            self.assertEqual(url.parse(second), second,
+                'URL(%s) should equal itself' % second)
+
+    def test_str_repr(self):
+        '''Make sure str and repr produce reasonable results'''
+        examples = [
+            ('http://foo.com/', 'http://foo.com/'),
+            ('http://FOO.com/', 'http://foo.com/')
+        ]
+
+        for toparse, strng in examples:
+            self.assertEqual(str(url.parse(toparse)), strng)
+            self.assertEqual(repr(url.parse(toparse)),
+                '<url.URL object "%s" >' % strng)
 
     def test_punycode(self):
         '''Make sure punycode encoding works correctly'''
@@ -184,12 +258,25 @@ class Test(unittest.TestCase):
             ('../foo'            , 'http://testing.com/a/foo'  ),
             ('./foo'             , 'http://testing.com/a/b/foo'),
             ('foo'               , 'http://testing.com/a/b/foo'),
-            ('/foo'              , 'http://testing.com/foo'      ),
-            ('http://foo.com/bar', 'http://foo.com/bar'          )
+            ('/foo'              , 'http://testing.com/foo'    ),
+            ('http://foo.com/bar', 'http://foo.com/bar'        ),
+            (u'/foo'             , 'http://testing.com/foo'    )
         ]
 
         for rel, absolute in examples:
             self.assertEqual(base.relative(rel).utf8(), absolute)
+
+    def test_sanitize(self):
+        '''Make sure the sanitize method does all that it should'''
+        examples = [
+            ('../foo/bar none', 'foo/bar%20none')
+        ]
+
+        base = 'http://testing.com/'
+        for bad, good in examples:
+            bad = base + bad
+            good = base + good
+            self.assertEqual(url.parse(bad).sanitize().utf8(), good)
 
 
 if __name__ == '__main__':
