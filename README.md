@@ -76,7 +76,7 @@ effects in sequence:
     # Create a url object
     myurl = url.URL.parse('http://www.FOO.com/bar?utm_source=foo#what')
     # Remove some parameters and the fragment, spit out utf-8
-    print myurl.defrag().lower().deparam(['utm_source']).utf8()
+    print myurl.defrag().deparam(['utm_source']).utf8()
 
 In fact, unless the function explicitly returns a string, then the method may
 be chained:
@@ -116,13 +116,6 @@ absolute. This includes removing redundant forward slashes, `.` and `..`.
 
     >>> url.parse('http://foo.com/foo/./bar/../a/b/c/../../d').abspath().utf8()
     'http://foo.com/foo/a/d'
-
-`lower`
--------
-The casing of the hostname is not supposed to matter, so...
-
-    >>> url.parse('http://fOo.COM/bar').lower().utf8()
-    'http://foo.com/bar'
 
 `escape`
 --------

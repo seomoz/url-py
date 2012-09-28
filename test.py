@@ -35,7 +35,7 @@ class Test(unittest.TestCase):
         for bad, good in examples:
             bad = 'http://' + bad
             good = 'http://' + good
-            self.assertEqual(url.parse(bad).lower().utf8(), good)
+            self.assertEqual(url.parse(bad).utf8(), good)
 
     def test_abspath(self):
         '''Make sure absolute path checking works correctly'''

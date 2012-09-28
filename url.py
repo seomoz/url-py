@@ -90,8 +90,8 @@ class URL(object):
             _other = self.parse(other.utf8(), 'utf-8')
 
         _self = self.parse(self.utf8(), 'utf-8')
-        _self.lower().canonical().defrag().abspath().escape().punycode()
-        _other.lower().canonical().defrag().abspath().escape().punycode()
+        _self.canonical().defrag().abspath().escape().punycode()
+        _other.canonical().defrag().abspath().escape().punycode()
 
         result = (
             _self._scheme == _other._scheme and
@@ -179,14 +179,9 @@ class URL(object):
             self._path = '/'.join(unsplit)
         return self
 
-    def lower(self):
-        '''Lowercase the hostname'''
-        self._host = self._host.lower()
-        return self
-
     def sanitize(self):
-        '''A shortcut to abspath, escape and lowercase'''
-        return self.abspath().escape().lower()
+        '''A shortcut to abspath and escape'''
+        return self.abspath().escape()
 
     def escape(self):
         '''Make sure that the path is correctly escaped'''
