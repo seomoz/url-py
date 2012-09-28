@@ -191,6 +191,16 @@ class URL(object):
     def escape(self):
         '''Make sure that the path is correctly escaped'''
         self._path = urllib.quote(urllib.unquote(self._path))
+        # Safe characters taken from:
+        #    http://tools.ietf.org/html/rfc3986#page-50
+        self._query = urllib.quote(urllib.unquote(self._query),
+            safe='-._~!$&\'()*+,;=:@')
+        # The safe characters for URL parameters seemed a little more vague.
+        # They are interpreted here as *pchar despite this page, since the
+        # updated RFC seems to offer no replacement
+        #    http://tools.ietf.org/html/rfc3986#page-54
+        self._params = urllib.quote(urllib.unquote(self._params),
+            safe='-._~!$&\'()*+,;=:@')
         return self
 
     def unescape(self):

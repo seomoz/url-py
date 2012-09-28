@@ -68,8 +68,13 @@ class Test(unittest.TestCase):
         '''Make sure we escape paths correctly'''
         examples = [
             ('hello%20and%20how%20are%20you', 'hello%20and%20how%20are%20you'),
-            ('danny\'s pub'                 , 'danny%27s%20pub'),
-            ('danny%27s pub?foo=bar&yo'     , 'danny%27s%20pub?foo=bar&yo')
+            ('danny\'s pub'                 , 'danny%27s%20pub'              ),
+            ('danny%27s pub?foo=bar&yo'     , 'danny%27s%20pub?foo=bar&yo'   ),
+            # Thanks to @myronmarston for these test cases
+            ('foo?bar none=foo bar'         , 'foo?bar%20none=foo%20bar'     ),
+            ('foo;a=1;b=2?a=1&b=2'          , 'foo;a=1;b=2?a=1&b=2'          ),
+            ('foo?bar=["hello","howdy"]'    ,
+                'foo?bar=%5B%22hello%22,%22howdy%22%5D'),
         ]
 
         base = 'http://testing.com/'
