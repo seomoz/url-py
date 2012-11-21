@@ -227,7 +227,7 @@ class URL(object):
         if self._host:
             self._host = IDNA.encode(self._host.decode('utf-8'))[0]
             return self
-        raise TypeError('Cannot punycode a relative url')
+        raise TypeError('Cannot punycode a relative url (%s)' % repr(self))
 
     def unpunycode(self):
         '''Convert to an unpunycoded hostname'''
@@ -235,7 +235,7 @@ class URL(object):
             self._host = IDNA.decode(
                 self._host.decode('utf-8'))[0].encode('utf-8')
             return self
-        raise TypeError('Cannot unpunycode a relative url')
+        raise TypeError('Cannot unpunycode a relative url (%s)' % repr(self))
 
     ###########################################################################
     # Information about the type of url it is
