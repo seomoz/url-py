@@ -207,11 +207,11 @@ class URL(object):
     # sequence alone.
     def _pct_normalize(self, raw, allowed):
         global UTF8, HEXDIG
-    
+
         # This only works on byte strings, so coerce input if needed.
         if isinstance(raw, unicode):
             raw = UTF8.encode(raw)[0]
-    
+
         ret = ''
         lraw = len(raw)
         i = 0
@@ -228,9 +228,9 @@ class URL(object):
             else:
                 ret += '%' + '%02X' % ord(raw[i])
             i += 1
-    
+
         return ret
-    
+
     # Normalize a %XX sequence.
     def _do_pct(self, pxx, allowed):
         global RESERVED
