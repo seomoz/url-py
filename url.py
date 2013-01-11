@@ -55,6 +55,7 @@ UNRESERVED = ALPHA + DIGIT + "-._~"
 RESERVED = GEN_DELIMS + SUB_DELIMS
 PCHAR = UNRESERVED + SUB_DELIMS + ":@/"  # Slash legal in path, so include it
 QUERY = PCHAR + "?"  # Slash already included above.
+USERINFO = UNRESERVED + SUB_DELIMS + ":"
 HEXDIG = DIGIT + "ABCDEFabcdef"
 
 def parse(url, encoding='utf-8'):
@@ -83,9 +84,10 @@ class URL(object):
             port = None
 
         return cls(parsed.scheme, parsed.hostname, port,
-            parsed.path, parsed.params, parsed.query, parsed.fragment)
+            parsed.path, parsed.params, parsed.query, parsed.fragment,
+            username=parsed.username, password=parsed.password)
 
-    def __init__(self, scheme, host, port, path, params, query, fragment):
+    def __init__(self, scheme, host, port, path, params, query, fragment, username=None, password=None):
         self._scheme = scheme
         self._host = host
         self._port = port
@@ -96,6 +98,8 @@ class URL(object):
         self._query = re.sub(r'^\?+', '', query)
         self._query = re.sub(r'^&|&$', '', re.sub(r'&{2,}', '&', self._query))
         self._fragment = fragment
+        self._username = username
+        self._password = password
 
     def equiv(self, other):
         '''Return true if this url is equivalent to another'''
@@ -109,11 +113,13 @@ class URL(object):
         _other.canonical().defrag().abspath().escape().punycode()
 
         result = (
-            _self._scheme == _other._scheme and
-            _self._host   == _other._host   and
-            _self._path   == _other._path   and
-            _self._params == _other._params and
-            _self._query  == _other._query)
+            _self._scheme   == _other._scheme   and
+            _self._host     == _other._host     and
+            _self._path     == _other._path     and
+            _self._params   == _other._params   and
+            _self._query    == _other._query    and
+            _self._username == _other._username and
+            _self._password == _other._password)
 
         if result:
             if _self._port and not _other._port:
@@ -132,13 +138,15 @@ class URL(object):
         if isinstance(other, basestring):
             return self.__eq__(self.parse(other, 'utf-8'))
         return (
-            self._scheme   == other._scheme and
-            self._host     == other._host   and
-            self._path     == other._path   and
-            self._port     == other._port   and
-            self._params   == other._params and
-            self._query    == other._query  and
-            self._fragment == other._fragment)
+            self._scheme   == other._scheme   and
+            self._host     == other._host     and
+            self._path     == other._path     and
+            self._port     == other._port     and
+            self._params   == other._params   and
+            self._query    == other._query    and
+            self._fragment == other._fragment and
+            self._username == other._username and
+            self._password == other._password)
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -243,20 +251,35 @@ class URL(object):
             return pxx.upper()
 
     def escape(self):
-        '''Make sure that the path is correctly escaped'''
+        '''Make sure that the username, password, and path are correctly escaped'''
         self._path = self._pct_normalize(self._path, PCHAR)
         self._query = self._pct_normalize(self._query, QUERY)
         self._params = self._pct_normalize(self._params, QUERY)
+        if self._username is not None:
+            self._username = self._pct_normalize(self._username, USERINFO)
+        if self._password is not None:
+            self._password = self._pct_normalize(self._password, USERINFO)
         return self
 
     def unescape(self):
-        '''Unescape the path'''
+        '''Unescape the username, password, and path'''
         self._path = urllib.unquote(self._path)
+        if self._username is not None:
+            self._username = urllib.unquote(self._username)
+        if self._password is not None:
+            self._password = urllib.unquote(self._password)
         return self
 
     def encode(self, encoding):
         '''Return the url in an arbitrary encoding'''
-        netloc = self._host
+        netloc = ''
+        if self._username is not None:
+            netloc += self._username
+            if self._password is not None:
+                netloc += ':' + self._password
+            netloc += '@'
+
+        netloc += self._host
         if self._port:
             netloc += (':' + str(self._port))
 

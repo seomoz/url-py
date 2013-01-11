@@ -89,10 +89,32 @@ class Test(unittest.TestCase):
         # "'" is a sub-delim and is not equivalent to %27 per RFC 3986!
         more_examples = [
             ('danny\'s pub'                 , 'danny%27s%20pub'              ),
+            ('danny%27s%20pub'              , 'danny\'s pub'                 )
         ]
         for bad, good in more_examples:
             bad = base + bad
             good = base + good
+            self.assertNotEqual(url.parse(bad).escape().utf8(), good)
+
+        examples = [
+            ('http://user:pass@foo.com',    'http://user:pass@foo.com'         ),
+            (u'http://José:no way@foo.com', 'http://Jos%C3%A9:no%20way@foo.com')
+        ]
+        esab = '/page.html'
+        for bad, good in examples:
+            bad = bad + esab
+            good = good + esab
+            self.assertEqual(url.parse(bad).escape().utf8(), good)
+            # Escaping should also be idempotent
+            self.assertEqual(url.parse(bad).escape().escape().utf8(), good)
+
+        # Again, sub-delims should be left alone.
+        more_examples = [
+            ('http://oops!:don%27t@foo.com', 'http://oops%21:don\'t@foo.com'),
+        ]
+        for bad, good in more_examples:
+            bad = bad + esab
+            good = good + esab
             self.assertNotEqual(url.parse(bad).escape().utf8(), good)
 
     def test_equiv(self):
