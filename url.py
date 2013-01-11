@@ -279,9 +279,15 @@ class URL(object):
                 netloc += ':' + self._password
             netloc += '@'
 
-        netloc += self._host
-        if self._port:
-            netloc += (':' + str(self._port))
+        # Per RFC 3986, a host name can be an empty string, but in the
+        # case of a relative URL, it will be missing entirely and we
+        # should not generate a netloc at all in such a case.
+        if self._host is None:
+            netloc = None
+        else:
+            netloc += self._host
+            if self._port:
+                netloc += (':' + str(self._port))
 
         result = urlparse.urlunparse((self._scheme, netloc, self._path,
             self._params, self._query, self._fragment))
