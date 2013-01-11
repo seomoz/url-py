@@ -40,11 +40,27 @@ PORTS = {
     'https': 443
 }
 
+# Character classes, from RFC 3986. It is very bad form to %-encode anything
+# in PCHAR in the path part of a URL, or in QUERY in the query part. In fact,
+# it is *illegal* to encode anything in GEN_DELIMS or SUB_DELIMS which is
+# also in QUERY or PCHAR. When normalizing, it is also illegal to decode any
+# %XX sequences which correspond to anything in GEN_DELIMS or SUB_DELIMS.
+# This is because, e.g., ',' and '%2C' are *not equivalent* in the path;
+# both forms are allowed, but result in different URLs.
+GEN_DELIMS = ":/?#[]@"
+SUB_DELIMS = "!$&'()*+,;="
+ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+DIGIT = "0123456789"
+UNRESERVED = ALPHA + DIGIT + "-._~"
+RESERVED = GEN_DELIMS + SUB_DELIMS
+PCHAR = UNRESERVED + SUB_DELIMS + ":@/"  # Slash legal in path, so include it
+QUERY = PCHAR + "?"  # Slash already included above.
+USERINFO = UNRESERVED + SUB_DELIMS + ":"
+HEXDIG = DIGIT + "ABCDEFabcdef"
 
 def parse(url, encoding='utf-8'):
     '''Parse the provided url string and return an URL object'''
     return URL.parse(url, encoding)
-
 
 class URL(object):
     '''
@@ -68,9 +84,10 @@ class URL(object):
             port = None
 
         return cls(parsed.scheme, parsed.hostname, port,
-            parsed.path, parsed.params, parsed.query, parsed.fragment)
+            parsed.path, parsed.params, parsed.query, parsed.fragment,
+            username=parsed.username, password=parsed.password)
 
-    def __init__(self, scheme, host, port, path, params, query, fragment):
+    def __init__(self, scheme, host, port, path, params, query, fragment, username=None, password=None):
         self._scheme = scheme
         self._host = host
         self._port = port
@@ -81,6 +98,8 @@ class URL(object):
         self._query = re.sub(r'^\?+', '', query)
         self._query = re.sub(r'^&|&$', '', re.sub(r'&{2,}', '&', self._query))
         self._fragment = fragment
+        self._username = username
+        self._password = password
 
     def equiv(self, other):
         '''Return true if this url is equivalent to another'''
@@ -94,11 +113,13 @@ class URL(object):
         _other.canonical().defrag().abspath().escape().punycode()
 
         result = (
-            _self._scheme == _other._scheme and
-            _self._host   == _other._host   and
-            _self._path   == _other._path   and
-            _self._params == _other._params and
-            _self._query  == _other._query)
+            _self._scheme   == _other._scheme   and
+            _self._host     == _other._host     and
+            _self._path     == _other._path     and
+            _self._params   == _other._params   and
+            _self._query    == _other._query    and
+            _self._username == _other._username and
+            _self._password == _other._password)
 
         if result:
             if _self._port and not _other._port:
@@ -117,13 +138,15 @@ class URL(object):
         if isinstance(other, basestring):
             return self.__eq__(self.parse(other, 'utf-8'))
         return (
-            self._scheme   == other._scheme and
-            self._host     == other._host   and
-            self._path     == other._path   and
-            self._port     == other._port   and
-            self._params   == other._params and
-            self._query    == other._query  and
-            self._fragment == other._fragment)
+            self._scheme   == other._scheme   and
+            self._host     == other._host     and
+            self._path     == other._path     and
+            self._port     == other._port     and
+            self._params   == other._params   and
+            self._query    == other._query    and
+            self._fragment == other._fragment and
+            self._username == other._username and
+            self._password == other._password)
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -183,31 +206,88 @@ class URL(object):
         '''A shortcut to abspath and escape'''
         return self.abspath().escape()
 
+    # Percent-normalize the path, query, or params (depending on allowed). A
+    # careful reading of RFC 3986 reveals that we cannot use
+    # urllib.quote(urllib.unqoute(...)) to do this, because for any character
+    # in GEN_DELIMS or SUB_DELIMS above, the %-encoded form and the bare,
+    # unencoded character are *explicitly stated to result in different URLs*.
+    # Alas, urllib.unquote() provides no way to request to leave a %XX
+    # sequence alone.
+    def _pct_normalize(self, raw, allowed):
+        global UTF8, HEXDIG
+
+        # This only works on byte strings, so coerce input if needed.
+        if isinstance(raw, unicode):
+            raw = UTF8.encode(raw)[0]
+
+        ret = ''
+        lraw = len(raw)
+        i = 0
+        while i < lraw:
+            # If it's a %XX sequence, normalize it.
+            if raw[i] == '%' and i + 2 < lraw and raw[i+1] in HEXDIG and raw[i+2] in HEXDIG:
+                ret += self._do_pct(raw[i:i+3], allowed)
+                i += 3
+                continue
+            # If it's an allowed character, pass it as-is
+            if raw[i] in allowed:
+                ret += raw[i]
+            # Else it's not allowed and must be %-encoded
+            else:
+                ret += '%' + '%02X' % ord(raw[i])
+            i += 1
+
+        return ret
+
+    # Normalize a %XX sequence.
+    def _do_pct(self, pxx, allowed):
+        global RESERVED
+        ch = chr(int(pxx[1:], 16))
+        if ch in allowed and ch not in RESERVED:
+            # If it's allowed and not reserved, decode it
+            return ch
+        else:
+            # Else normalize XX to uppercase
+            return pxx.upper()
+
     def escape(self):
-        '''Make sure that the path is correctly escaped'''
-        self._path = urllib.quote(urllib.unquote(self._path))
-        # Safe characters taken from:
-        #    http://tools.ietf.org/html/rfc3986#page-50
-        self._query = urllib.quote(urllib.unquote(self._query),
-            safe='-._~!$&\'()*+,;=:@')
-        # The safe characters for URL parameters seemed a little more vague.
-        # They are interpreted here as *pchar despite this page, since the
-        # updated RFC seems to offer no replacement
-        #    http://tools.ietf.org/html/rfc3986#page-54
-        self._params = urllib.quote(urllib.unquote(self._params),
-            safe='-._~!$&\'()*+,;=:@')
+        '''Make sure that the username, password, and path are correctly escaped'''
+        self._path = self._pct_normalize(self._path, PCHAR)
+        self._query = self._pct_normalize(self._query, QUERY)
+        self._params = self._pct_normalize(self._params, QUERY)
+        if self._username is not None:
+            self._username = self._pct_normalize(self._username, USERINFO)
+        if self._password is not None:
+            self._password = self._pct_normalize(self._password, USERINFO)
         return self
 
     def unescape(self):
-        '''Unescape the path'''
+        '''Unescape the username, password, and path'''
         self._path = urllib.unquote(self._path)
+        if self._username is not None:
+            self._username = urllib.unquote(self._username)
+        if self._password is not None:
+            self._password = urllib.unquote(self._password)
         return self
 
     def encode(self, encoding):
         '''Return the url in an arbitrary encoding'''
-        netloc = self._host
-        if self._port:
-            netloc += (':' + str(self._port))
+        netloc = ''
+        if self._username is not None:
+            netloc += self._username
+            if self._password is not None:
+                netloc += ':' + self._password
+            netloc += '@'
+
+        # Per RFC 3986, a host name can be an empty string, but in the
+        # case of a relative URL, it will be missing entirely and we
+        # should not generate a netloc at all in such a case.
+        if self._host is None:
+            netloc = None
+        else:
+            netloc += self._host
+            if self._port:
+                netloc += (':' + str(self._port))
 
         result = urlparse.urlunparse((self._scheme, netloc, self._path,
             self._params, self._query, self._fragment))
