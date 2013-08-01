@@ -28,7 +28,7 @@ except ImportError:
 
 setup(
 	name             = 'url',
-	version          = '0.1.0',
+	version          = '0.1.1',
 	description      = 'URL Parsing',
 	long_description = '''
 Some helper functions for parsing URLs, sanitizing them, normalizing them.
@@ -49,4 +49,5 @@ cleaning parameter and query strings, and a little more sanitization.
 		'Environment :: Web Environment',
 		'Intended Audience :: Developers',
 		'Topic :: Internet :: WWW/HTTP'],
+	requires = ['publicsuffix']
 )

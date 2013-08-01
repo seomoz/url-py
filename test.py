@@ -17,7 +17,10 @@ class Test(unittest.TestCase):
             (';a=1;;;;;;b=2'   , ';a=1;b=2'    ),   # Removes excess ;'s
             (';foo_c=2'        , ';foo_c=2'    ),   # Not overzealous
             ('?foo_c=2'        , '?foo_c=2'    ),   # ...
-            ('????foo=2'       , '?foo=2'      )    # Removes leading ?'s
+            ('????foo=2'       , '?foo=2'      ),   # Removes leading ?'s
+            (';foo'            , ';foo'        ),
+            ('?foo'            , '?foo'        ),
+            (''                , ''            )
         ]
         base = 'http://testing.com/page'
         for bad, good in examples:
@@ -68,8 +71,8 @@ class Test(unittest.TestCase):
         '''Make sure we escape paths correctly'''
         examples = [
             ('hello%20and%20how%20are%20you', 'hello%20and%20how%20are%20you'),
-            ('danny\'s pub'                 , 'danny%27s%20pub'              ),
-            ('danny%27s pub?foo=bar&yo'     , 'danny%27s%20pub?foo=bar&yo'   ),
+            ('danny\'s pub'                 , 'danny\'s%20pub'              ),
+            ('danny\'s pub?foo=bar&yo'     , 'danny\'s%20pub?foo=bar&yo'   ),
             # Thanks to @myronmarston for these test cases
             ('foo?bar none=foo bar'         , 'foo?bar%20none=foo%20bar'     ),
             ('foo;a=1;b=2?a=1&b=2'          , 'foo;a=1;b=2?a=1&b=2'          ),
@@ -84,6 +87,11 @@ class Test(unittest.TestCase):
             self.assertEqual(url.parse(bad).escape().utf8(), good)
             # Escaping should also be idempotent
             self.assertEqual(url.parse(bad).escape().escape().utf8(), good)
+
+        # This example's from the wild:
+        example = 'http://www.balset.com/DE3FJ4Yg/p:h=300&m=2011~07~25~2444705.png&ma=cb&or=1&w=400/2011/10/10/2923710.jpg'
+        self.assertEqual(
+            url.parse(example).unescape().escape().utf8(), example)
 
     def test_equiv(self):
         '''Make sure equivalent urls work correctly'''
@@ -292,6 +300,26 @@ class Test(unittest.TestCase):
 
         for query, result in examples:
             self.assertEqual(url.parse(query).absolute(), result)
+
+    def test_pld(self):
+        '''Test the pay-level domain functionality'''
+        examples = [
+            ('http://foo.com/bar'    , 'foo.com'),
+            ('http://bar.foo.com/bar', 'foo.com'),
+            ('/foo'                  , '')
+        ]
+        for query, result in examples:
+            self.assertEqual(url.parse(query).pld(), result)
+
+    def test_tld(self):
+        '''Test the pay-level domain functionality'''
+        examples = [
+            ('http://foo.com/bar'    , 'com'),
+            ('http://bar.foo.com/bar', 'com'),
+            ('/foo'                  , '')
+        ]
+        for query, result in examples:
+            self.assertEqual(url.parse(query).tld(), result)
 
 
 if __name__ == '__main__':

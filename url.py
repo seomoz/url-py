@@ -26,7 +26,15 @@
 import re
 import codecs
 import urllib
-import urlparse
+try:
+    import urlparse
+except ImportError:
+    # Python 3 support
+    import urllib.parse as urlparse
+
+# For publicsuffix utilities
+from publicsuffix import PublicSuffixList
+psl = PublicSuffixList()
 
 # Come codes that we'll need
 IDNA = codecs.lookup('idna')
@@ -57,10 +65,11 @@ class URL(object):
     @classmethod
     def parse(cls, url, encoding):
         '''Parse the provided url, and return a URL instance'''
-        if isinstance(url, unicode):
-            parsed = urlparse.urlparse(url.encode('utf-8'))
+        if isinstance(url, str):
+            parsed = urlparse.urlparse(
+                url.decode(encoding).encode('utf-8'))
         else:
-            parsed = urlparse.urlparse(url.decode(encoding).encode('utf-8'))
+            parsed = urlparse.urlparse(url.encode('utf-8'))
 
         try:
             port = parsed.port
@@ -75,10 +84,10 @@ class URL(object):
         self._host = host
         self._port = port
         self._path = path or '/'
-        self._params = re.sub(r'^;+', '', params)
+        self._params = re.sub(r'^;+', '', str(params))
         self._params = re.sub(r'^;|;$', '', re.sub(r';{2,}', ';', self._params))
         # Strip off extra leading ?'s
-        self._query = re.sub(r'^\?+', '', query)
+        self._query = re.sub(r'^\?+', '', str(query))
         self._query = re.sub(r'^&|&$', '', re.sub(r'&{2,}', '&', self._query))
         self._fragment = fragment
 
@@ -146,7 +155,7 @@ class URL(object):
         self._fragment = None
         return self
 
-    def deparam(self, params=None):
+    def deparam(self, params):
         '''Strip any of the provided parameters out of the url'''
         # And remove all the black-listed query parameters
         self._query = '&'.join(q for q in self._query.split('&')
@@ -185,7 +194,8 @@ class URL(object):
 
     def escape(self):
         '''Make sure that the path is correctly escaped'''
-        self._path = urllib.quote(urllib.unquote(self._path))
+        self._path = urllib.quote(
+            urllib.unquote(self._path), safe='-._~!$&\'()*+,;=/:')
         # Safe characters taken from:
         #    http://tools.ietf.org/html/rfc3986#page-50
         self._query = urllib.quote(urllib.unquote(self._query),
@@ -209,17 +219,18 @@ class URL(object):
         if self._port:
             netloc += (':' + str(self._port))
 
-        result = urlparse.urlunparse((self._scheme, netloc, self._path,
-            self._params, self._query, self._fragment))
+        result = urlparse.urlunparse((str(self._scheme), str(netloc),
+            str(self._path), str(self._params), str(self._query),
+            self._fragment))
         return result.decode('utf-8').encode(encoding)
 
     def relative(self, path, encoding='utf-8'):
         '''Evaluate the new path relative to the current url'''
-        if isinstance(path, unicode):
-            newurl = urlparse.urljoin(self.utf8(), path.encode('utf-8'))
-        else:
+        if not isinstance(path, str):
             newurl = urlparse.urljoin(self.utf8(),
-                path.decode(encoding).encode('utf-8'))
+                str(path).decode(encoding).encode('utf-8'))
+        else:
+            newurl = urlparse.urljoin(self.utf8(), path.encode('utf-8'))
         return URL.parse(newurl, 'utf-8')
 
     def punycode(self):
@@ -236,6 +247,22 @@ class URL(object):
                 self._host.decode('utf-8'))[0].encode('utf-8')
             return self
         raise TypeError('Cannot unpunycode a relative url (%s)' % repr(self))
+
+    ###########################################################################
+    # Information about the domain
+    ###########################################################################
+    def pld(self):
+        '''Return the 'pay-level domain' of the url
+            (http://moz.com/blog/what-the-heck-should-we-call-domaincom)'''
+        if self._host:
+            return psl.get_public_suffix(self._host)
+        return ''
+
+    def tld(self):
+        '''Return the top-level domain of a url'''
+        if self._host:
+            return '.'.join(self.pld().split('.')[1:])
+        return ''
 
     ###########################################################################
     # Information about the type of url it is
