@@ -189,12 +189,12 @@ I'd like to support lazily-evaluated properties like `hostname`, `netloc`, etc.
 Dictionary Access
 -----------------
 I'd like to support dictionary-style access to parameters and query arguments,
-though I'm not sure how to best to it. My current thinking is that there will
+though I'm not sure how to best to do it. My current thinking is that there will
 be one way of getting params, one for queries, and then one for either.
 
 Authors
 =======
-This represents code samples, unit tests and functions from SEOmozzers,
+This represents code samples, unit tests and functions from Mozzers,
 including:
 
 - David Barts
