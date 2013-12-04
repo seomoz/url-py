@@ -3,4 +3,4 @@ python:
   - 2.6
   - 2.7
 script: python test.py
-install: 'pip install publicsuffix . --use-mirrors'
+install: pip install -r requirements.txt . --use-mirrors
