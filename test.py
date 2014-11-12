@@ -72,12 +72,15 @@ class Test(unittest.TestCase):
         examples = [
             ('hello%20and%20how%20are%20you', 'hello%20and%20how%20are%20you'),
             ('danny\'s pub'                 , 'danny\'s%20pub'              ),
+            ('danny%27s pub'                , 'danny%27s%20pub'             ),
             ('danny\'s pub?foo=bar&yo'     , 'danny\'s%20pub?foo=bar&yo'   ),
             # Thanks to @myronmarston for these test cases
             ('foo?bar none=foo bar'         , 'foo?bar%20none=foo%20bar'     ),
             ('foo;a=1;b=2?a=1&b=2'          , 'foo;a=1;b=2?a=1&b=2'          ),
             ('foo?bar=["hello","howdy"]'    ,
                 'foo?bar=%5B%22hello%22,%22howdy%22%5D'),
+            (u'española,nm%2cusa.html?gunk=junk+glunk&foo=bar baz',
+                'espa%C3%B1ola,nm%2Cusa.html?gunk=junk+glunk&foo=bar%20baz')
         ]
 
         base = 'http://testing.com/'
@@ -92,6 +95,20 @@ class Test(unittest.TestCase):
         example = 'http://www.balset.com/DE3FJ4Yg/p:h=300&m=2011~07~25~2444705.png&ma=cb&or=1&w=400/2011/10/10/2923710.jpg'
         self.assertEqual(
             url.parse(example).unescape().escape().utf8(), example)
+
+        # Test some URL's with usernames and passwords in them.
+        examples = [
+            ('http://user:pass@foo.com',      'http://user:pass@foo.com'         ),
+            (u'http://José:no way@foo.com',   'http://Jos%C3%A9:no%20way@foo.com'),
+            ('http://oops!:don%27t@foo.com',  'http://oops!:don%27t@foo.com'     ),
+        ]
+        suffix = '/page.html'
+        for bad, good in examples:
+            bad = bad + suffix
+            good = good + suffix
+            self.assertEqual(url.parse(bad).escape().utf8(), good)
+            # Escaping should also be idempotent
+            self.assertEqual(url.parse(bad).escape().escape().utf8(), good)
 
     def test_equiv(self):
         '''Make sure equivalent urls work correctly'''
