@@ -48,6 +48,23 @@ PORTS = {
     'https': 443
 }
 
+# Character classes, from RFC 3986. It is very bad form to %-encode anything
+# in PCHAR in the path part of a URL, or in QUERY in the query part. In fact,
+# it is *illegal* to encode anything in GEN_DELIMS or SUB_DELIMS which is
+# also in QUERY or PCHAR. When normalizing, it is also illegal to decode any
+# %XX sequences which correspond to anything in GEN_DELIMS or SUB_DELIMS.
+# This is because, e.g., ',' and '%2C' are *not equivalent* in the path;
+# both forms are allowed, but result in different URLs.
+GEN_DELIMS = ":/?#[]@"
+SUB_DELIMS = "!$&'()*+,;="
+ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+DIGIT = "0123456789"
+UNRESERVED = ALPHA + DIGIT + "-._~"
+RESERVED = GEN_DELIMS + SUB_DELIMS
+PCHAR = UNRESERVED + SUB_DELIMS + ":@/"  # Slash legal in path, so include it
+QUERY = PCHAR + "?"  # Slash already included above.
+USERINFO = UNRESERVED + SUB_DELIMS + ":"
+HEXDIG = DIGIT + "ABCDEFabcdef"
 
 def parse(url, encoding='utf-8'):
     '''Parse the provided url string and return an URL object'''
@@ -192,20 +209,59 @@ class URL(object):
         '''A shortcut to abspath and escape'''
         return self.abspath().escape()
 
+    # Percent-normalize the path, query, or params (depending on allowed). A
+    # careful reading of RFC 3986 reveals that we cannot use
+    # urllib.quote(urllib.unqoute(...)) to do this, because for any character
+    # in GEN_DELIMS or SUB_DELIMS above, the %-encoded form and the bare,
+    # unencoded character are *explicitly stated to result in different URLs*.
+    # Alas, urllib.unquote() provides no way to request to leave a %XX
+    # sequence alone.
+    def _pct_normalize(self, raw, allowed):
+        global UTF8, HEXDIG
+
+        # This only works on byte strings, so coerce input if needed.
+        if isinstance(raw, unicode):
+            raw = UTF8.encode(raw)[0]
+
+        ret = ''
+        lraw = len(raw)
+        i = 0
+        while i < lraw:
+            # If it's a %XX sequence, normalize it.
+            if raw[i] == '%' and i + 2 < lraw and raw[i+1] in HEXDIG and raw[i+2] in HEXDIG:
+                ret += self._do_pct(raw[i:i+3], allowed)
+                i += 3
+                continue
+            # If it's an allowed character, pass it as-is
+            if raw[i] in allowed:
+                ret += raw[i]
+            # Else it's not allowed and must be %-encoded
+            else:
+                ret += '%' + '%02X' % ord(raw[i])
+            i += 1
+
+        return ret
+
+    # Normalize a %XX sequence.
+    def _do_pct(self, pxx, allowed):
+        global RESERVED
+        ch = chr(int(pxx[1:], 16))
+        if ch in allowed and ch not in RESERVED:
+            # If it's allowed and not reserved, decode it
+            return ch
+        else:
+            # Else normalize XX to uppercase
+            return pxx.upper()
+
     def escape(self):
-        '''Make sure that the path is correctly escaped'''
-        self._path = urllib.quote(
-            urllib.unquote(self._path), safe='-._~!$&\'()*+,;=/:')
-        # Safe characters taken from:
-        #    http://tools.ietf.org/html/rfc3986#page-50
-        self._query = urllib.quote(urllib.unquote(self._query),
-            safe='-._~!$&\'()*+,;=:@')
-        # The safe characters for URL parameters seemed a little more vague.
-        # They are interpreted here as *pchar despite this page, since the
-        # updated RFC seems to offer no replacement
-        #    http://tools.ietf.org/html/rfc3986#page-54
-        self._params = urllib.quote(urllib.unquote(self._params),
-            safe='-._~!$&\'()*+,;=:@')
+        '''Make sure that the username, password, and path are correctly escaped'''
+        self._path = self._pct_normalize(self._path, PCHAR)
+        self._query = self._pct_normalize(self._query, QUERY)
+        self._params = self._pct_normalize(self._params, QUERY)
+        if self._username is not None:
+            self._username = self._pct_normalize(self._username, USERINFO)
+        if self._password is not None:
+            self._password = self._pct_normalize(self._password, USERINFO)
         return self
 
     def unescape(self):
