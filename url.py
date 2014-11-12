@@ -258,10 +258,10 @@ class URL(object):
         self._path = self._pct_normalize(self._path, PCHAR)
         self._query = self._pct_normalize(self._query, QUERY)
         self._params = self._pct_normalize(self._params, QUERY)
-        if self._username is not None:
-            self._username = self._pct_normalize(self._username, USERINFO)
-        if self._password is not None:
-            self._password = self._pct_normalize(self._password, USERINFO)
+        # if self._username is not None:
+        #     self._username = self._pct_normalize(self._username, USERINFO)
+        # if self._password is not None:
+        #     self._password = self._pct_normalize(self._password, USERINFO)
         return self
 
     def unescape(self):
