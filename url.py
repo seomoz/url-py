@@ -217,7 +217,7 @@ class URL(object):
         '''A shortcut to abspath and escape'''
         return self.abspath().escape()
 
-    def escape(self):
+    def escape(self, strict=False):
         '''Make sure that the path is correctly escaped'''
         self._path = urllib.quote(
             urllib.unquote(self._path), safe=URL.PATH)

@@ -96,6 +96,26 @@ class Test(unittest.TestCase):
         self.assertEqual(
             url.parse(example).unescape().escape().utf8(), example)
 
+    def test_strict_escape(self):
+        '''Test strict mode escaping'''
+        examples = [
+            ('danny%27s pub'                , 'danny%27s%20pub'                  ),
+            ('http://user:pass@foo.com'     , 'http://user:pass@foo.com'         ),
+            (u'http://José:no way@foo.com'  , 'http://Jos%C3%A9:no%20way@foo.com'),
+            ('http://oops!:don%27t@foo.com' , 'http://oops!:don%27t@foo.com'     ),
+            (u'española,nm%2cusa.html?gunk=junk+glunk&foo=bar baz',
+                'espa%C3%B1ola,nm%2Cusa.html?gunk=junk+glunk&foo=bar%20baz')
+        ]
+
+        base = 'http://testing.com/'
+        for bad, good in examples:
+            bad = base + bad
+            good = base + good
+            self.assertEqual(url.parse(bad).escape(strict=True).utf8(), good)
+            # Escaping should also be idempotent
+            self.assertEqual(
+                url.parse(bad).escape(strict=True).escape(strict=True).utf8(), good)
+
     def test_userinfo(self):
         '''Allow a userinfo section'''
         examples = [
