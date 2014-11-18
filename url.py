@@ -175,6 +175,8 @@ class URL(object):
 
     def deuserinfo(self):
         '''Remove any userinfo'''
+        self._username = None
+        self._password = None
         return self
 
     def abspath(self):
