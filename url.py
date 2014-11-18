@@ -229,7 +229,7 @@ class URL(object):
 
     def encode(self, encoding):
         '''Return the url in an arbitrary encoding'''
-        netloc = self._host
+        netloc = self._host or ''
         if self._port:
             netloc += (':' + str(self._port))
 
