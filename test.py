@@ -167,7 +167,8 @@ class Test(unittest.TestCase):
             ('http://foo.com/%A2%B3%C3'  , 'http://foo.com/%a2%b3'         ),
             (u'http://www.kündïgen.de/'  , 'http://www.xn--kndigen-n2a.de/'),
             ('http://user:pass@foo.com/' , 'http://foo.com/'               ),
-            ('http://just-user@foo.com/' , 'http://foo.com/'               )
+            ('http://just-user@foo.com/' , 'http://foo.com/'               ),
+            ('http://user:pass@foo.com/' , 'http://pass:user@foo.com/'     )
         ]
         for first, second in examples:
             # None of these examples should evaluate as strictly equal
@@ -176,10 +177,10 @@ class Test(unittest.TestCase):
             # Using a string
             self.assertNotEqual(url.parse(first), second,
                 'URL(%s) should not equal %s' % (first, second))
-            # Transitive
+            # Symmetric
             self.assertNotEqual(url.parse(second), url.parse(first),
                 'URL(%s) should not equal URL(%s)' % (second, first))
-            # Using a string, transitive
+            # Using a string, symmetric
             self.assertNotEqual(url.parse(second), first,
                 'URL(%s) should not equal %s' % (second, first))
             # Should equal self
@@ -212,10 +213,10 @@ class Test(unittest.TestCase):
             # Equiv with a string
             self.assertTrue(url.parse(first).equiv(second),
                 '%s should equiv(%s)' % (first, second))
-            # Make sure it's also transitive
+            # Make sure it's also symmetric
             self.assertTrue(url.parse(second).equiv(url.parse(first)),
                 '%s should equiv(%s)' % (second, first))
-            # Transitive with string arg
+            # Symmetric with string arg
             self.assertTrue(url.parse(second).equiv(first),
                 '%s should equiv(%s)' % (second, first))
             # Should be equivalent to self
@@ -244,10 +245,10 @@ class Test(unittest.TestCase):
             # Equiv with a string
             self.assertFalse(url.parse(first).equiv(second),
                 '%s should not equiv(%s)' % (first, second))
-            # Make sure it's also transitive
+            # Make sure it's also symmetric
             self.assertFalse(url.parse(second).equiv(url.parse(first)),
                 '%s should not equiv(%s)' % (second, first))
-            # Transitive with string arg
+            # Symmetric with string arg
             self.assertFalse(url.parse(second).equiv(first),
                 '%s should not equiv(%s)' % (second, first))
             # Should be equivalent to self
@@ -262,10 +263,10 @@ class Test(unittest.TestCase):
             # Using a string
             self.assertNotEqual(url.parse(first), second,
                 'URL(%s) should not equal %s' % (first, second))
-            # Transitive
+            # Symmetric
             self.assertNotEqual(url.parse(second), url.parse(first),
                 'URL(%s) should not equal URL(%s)' % (second, first))
-            # Using a string, transitive
+            # Using a string, symmetric
             self.assertNotEqual(url.parse(second), first,
                 'URL(%s) should not equal %s' % (second, first))
             # Should equal self
