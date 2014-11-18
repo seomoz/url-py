@@ -107,11 +107,13 @@ class URL(object):
         _other.canonical().defrag().abspath().escape().punycode()
 
         result = (
-            _self._scheme == _other._scheme and
-            _self._host   == _other._host   and
-            _self._path   == _other._path   and
-            _self._params == _other._params and
-            _self._query  == _other._query)
+            _self._scheme   == _other._scheme   and
+            _self._host     == _other._host     and
+            _self._path     == _other._path     and
+            _self._params   == _other._params   and
+            _self._query    == _other._query    and
+            _self._username == _other._username and
+            _self._password == _other._password)
 
         if result:
             if _self._port and not _other._port:
@@ -130,13 +132,15 @@ class URL(object):
         if isinstance(other, basestring):
             return self.__eq__(self.parse(other, 'utf-8'))
         return (
-            self._scheme   == other._scheme and
-            self._host     == other._host   and
-            self._path     == other._path   and
-            self._port     == other._port   and
-            self._params   == other._params and
-            self._query    == other._query  and
-            self._fragment == other._fragment)
+            self._scheme   == other._scheme   and
+            self._host     == other._host     and
+            self._path     == other._path     and
+            self._port     == other._port     and
+            self._params   == other._params   and
+            self._query    == other._query    and
+            self._fragment == other._fragment and
+            self._username == other._username and
+            self._password == other._password)
 
     def __ne__(self, other):
         return not self.__eq__(other)
