@@ -125,8 +125,7 @@ class URL(object):
             _self._host     == _other._host     and
             _self._path     == _other._path     and
             _self._params   == _other._params   and
-            _self._query    == _other._query    and
-            _self._userinfo == _other._userinfo)
+            _self._query    == _other._query)
 
         if result:
             if _self._port and not _other._port:
