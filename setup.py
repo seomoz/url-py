@@ -49,5 +49,8 @@ cleaning parameter and query strings, and a little more sanitization.
 		'Environment :: Web Environment',
 		'Intended Audience :: Developers',
 		'Topic :: Internet :: WWW/HTTP'],
-	install_requires = ['publicsuffix']
+	install_requires = [
+		'publicsuffix',
+		'nose'
+	]
 )
