@@ -240,6 +240,8 @@ class URL(object):
             self._path = self.percent_encode(self._path, URL.PATH)
             self._query = self.percent_encode(self._query, URL.QUERY)
             self._params = self.percent_encode(self._params, URL.QUERY)
+            if self._userinfo:
+                self._userinfo = self.percent_encode(self._userinfo, URL.USERINFO)
             return self
         else:
             self._path = urllib.quote(
@@ -254,6 +256,9 @@ class URL(object):
             #    http://tools.ietf.org/html/rfc3986#page-54
             self._params = urllib.quote(urllib.unquote(self._params),
                 safe=URL.QUERY)
+            if self._userinfo:
+                self._userinfo = urllib.quote(urllib.unquote(self._userinfo),
+                    safe=URL.USERINFO)
             return self
 
     def unescape(self):
