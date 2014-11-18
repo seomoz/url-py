@@ -367,6 +367,19 @@ class Test(unittest.TestCase):
         for query, result in examples:
             self.assertEqual(url.parse(query).tld(), result)
 
+    def test_empty_hostname(self):
+        '''Allow empty hostnames'''
+        examples = [
+            'http:///path',
+            'http://userinfo@/path',
+            'http://:80/path',
+        ]
+        for example in examples:
+            # Equal to itself
+            self.assertEqual(url.parse(example), example)
+            # String representation equal to the provided example
+            self.assertEqual(url.parse(example).utf8(), example)
+
 
 if __name__ == '__main__':
     unittest.main()
