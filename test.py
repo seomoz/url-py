@@ -105,6 +105,47 @@ class Test(unittest.TestCase):
             good = good + suffix
             self.assertEqual(url.parse(bad).utf8(), good)
 
+    def test_equal(self):
+        '''Test the equality functionality'''
+        # These examples should not work. This includes all the examples from equivalence
+        # test as well.
+        examples = [
+            ('http://foo.com:80'         , 'http://foo.com/'               ),
+            ('https://foo.com:443'       , 'https://foo.com/'              ),
+            ('http://foo.com/?b=2&&&&a=1', 'http://foo.com/?a=1&b=2'       ),
+            ('http://foo.com/%A2%B3'     , 'http://foo.com/%a2%b3'         ),
+            ('http://foo.com/a/../b/.'   , 'http://foo.com/b/'             ),
+            (u'http://www.kündigen.de/'  , 'http://www.xn--kndigen-n2a.de/'),
+            (u'http://www.kündiGen.DE/'  , 'http://www.xn--kndigen-n2a.de/'),
+            ('http://foo.com:'           , 'http://foo.co.uk/'             ),
+            ('http://foo.com:8080'       , 'http://foo.com/'               ),
+            ('https://foo.com:4430'      , 'https://foo.com/'              ),
+            ('http://foo.com?page&foo'   , 'http://foo.com/?page'          ),
+            ('http://foo.com/?b=2&c&a=1' , 'http://foo.com/?a=1&b=2'       ),
+            ('http://foo.com/%A2%B3%C3'  , 'http://foo.com/%a2%b3'         ),
+            (u'http://www.kündïgen.de/'  , 'http://www.xn--kndigen-n2a.de/'),
+            ('http://user:pass@foo.com/' , 'http://foo.com/'               ),
+            ('http://just-user@foo.com/' , 'http://foo.com/'               )
+        ]
+        for first, second in examples:
+            # None of these examples should evaluate as strictly equal
+            self.assertNotEqual(url.parse(first), url.parse(second),
+                'URL(%s) should not equal URL(%s)' % (first, second))
+            # Using a string
+            self.assertNotEqual(url.parse(first), second,
+                'URL(%s) should not equal %s' % (first, second))
+            # Transitive
+            self.assertNotEqual(url.parse(second), url.parse(first),
+                'URL(%s) should not equal URL(%s)' % (second, first))
+            # Using a string, transitive
+            self.assertNotEqual(url.parse(second), first,
+                'URL(%s) should not equal %s' % (second, first))
+            # Should equal self
+            self.assertEqual(url.parse(first), first,
+                'URL(%s) should equal itself' % first)
+            self.assertEqual(url.parse(second), second,
+                'URL(%s) should equal itself' % second)
+
     def test_equiv(self):
         '''Make sure equivalent urls work correctly'''
         # Things to consider here are:
@@ -141,24 +182,6 @@ class Test(unittest.TestCase):
             self.assertTrue(url.parse(second).equiv(second),
                 '%s should equiv itself' % second)
 
-            # None of these examples should evaluate as strictly equal
-            self.assertNotEqual(url.parse(first), url.parse(second),
-                'URL(%s) should not equal URL(%s)' % (first, second))
-            # Using a string
-            self.assertNotEqual(url.parse(first), second,
-                'URL(%s) should not equal %s' % (first, second))
-            # Transitive
-            self.assertNotEqual(url.parse(second), url.parse(first),
-                'URL(%s) should not equal URL(%s)' % (second, first))
-            # Using a string, transitive
-            self.assertNotEqual(url.parse(second), first,
-                'URL(%s) should not equal %s' % (second, first))
-            # Should equal self
-            self.assertEqual(url.parse(first), first,
-                'URL(%s) should equal itself' % first)
-            self.assertEqual(url.parse(second), second,
-                'URL(%s) should equal itself' % second)
-
         # Now some examples that should /not/ pass
         examples = [
             ('http://foo.com:'           , 'http://foo.co.uk/'             ),
@@ -168,6 +191,8 @@ class Test(unittest.TestCase):
             ('http://foo.com/?b=2&c&a=1' , 'http://foo.com/?a=1&b=2'       ),
             ('http://foo.com/%A2%B3%C3'  , 'http://foo.com/%a2%b3'         ),
             (u'http://www.kündïgen.de/'  , 'http://www.xn--kndigen-n2a.de/'),
+            ('http://user:pass@foo.com/' , 'http://foo.com/'               ),
+            ('http://just-user@foo.com/' , 'http://foo.com/'               )
         ]
 
         for first, second in examples:
