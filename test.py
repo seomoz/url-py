@@ -204,6 +204,8 @@ class Test(unittest.TestCase):
             ('http://foo.com/a/../b/.'   , 'http://foo.com/b/'             ),
             (u'http://www.kündigen.de/'  , 'http://www.xn--kndigen-n2a.de/'),
             (u'http://www.kündiGen.DE/'  , 'http://www.xn--kndigen-n2a.de/'),
+            ('http://user:pass@foo.com/' , 'http://foo.com/'               ),
+            ('http://just-user@foo.com/' , 'http://foo.com/'               )
         ]
 
         for first, second in examples:
@@ -233,9 +235,7 @@ class Test(unittest.TestCase):
             ('http://foo.com?page&foo'   , 'http://foo.com/?page'          ),
             ('http://foo.com/?b=2&c&a=1' , 'http://foo.com/?a=1&b=2'       ),
             ('http://foo.com/%A2%B3%C3'  , 'http://foo.com/%a2%b3'         ),
-            (u'http://www.kündïgen.de/'  , 'http://www.xn--kndigen-n2a.de/'),
-            ('http://user:pass@foo.com/' , 'http://foo.com/'               ),
-            ('http://just-user@foo.com/' , 'http://foo.com/'               )
+            (u'http://www.kündïgen.de/'  , 'http://www.xn--kndigen-n2a.de/')
         ]
 
         for first, second in examples:
