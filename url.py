@@ -77,9 +77,11 @@ class URL(object):
             port = None
 
         return cls(parsed.scheme, parsed.hostname, port,
-            parsed.path, parsed.params, parsed.query, parsed.fragment)
+            parsed.path, parsed.params, parsed.query, parsed.fragment,
+            parsed.username, parsed.password)
 
-    def __init__(self, scheme, host, port, path, params, query, fragment):
+    def __init__(self, scheme, host, port, path, params, query, fragment,
+        username=None, password=None):
         self._scheme = scheme
         self._host = host
         self._port = port
@@ -90,6 +92,8 @@ class URL(object):
         self._query = re.sub(r'^\?+', '', str(query))
         self._query = re.sub(r'^&|&$', '', re.sub(r'&{2,}', '&', self._query))
         self._fragment = fragment
+        self._username = username
+        self._password = password
 
     def equiv(self, other):
         '''Return true if this url is equivalent to another'''
@@ -218,6 +222,12 @@ class URL(object):
         netloc = self._host
         if self._port:
             netloc += (':' + str(self._port))
+
+        if self._username is not None:
+            if self._password is not None:
+                netloc = '%s:%s@%s' % (self._username, self._password, netloc)
+            else:
+                netloc = '%s@%s' % (self._username, netloc)
 
         result = urlparse.urlunparse((str(self._scheme), str(netloc),
             str(self._path), str(self._params), str(self._query),
