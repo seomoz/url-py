@@ -93,6 +93,18 @@ class Test(unittest.TestCase):
         self.assertEqual(
             url.parse(example).unescape().escape().utf8(), example)
 
+    def test_userinfo(self):
+        '''Allow a userinfo section'''
+        examples = [
+            ('http://user:pass@foo.com',   'http://user:pass@foo.com'),
+            ('http://just-a-name@foo.com', 'http://just-a-name@foo.com')
+        ]
+        suffix = '/page.html'
+        for bad, good in examples:
+            bad = bad + suffix
+            good = good + suffix
+            self.assertEqual(url.parse(bad).utf8(), good)
+
     def test_equiv(self):
         '''Make sure equivalent urls work correctly'''
         # Things to consider here are:
