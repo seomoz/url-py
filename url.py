@@ -62,6 +62,17 @@ class URL(object):
         http://www.ietf.org/rfc/rfc3986.txt
     '''
 
+    # Via http://www.ietf.org/rfc/rfc3986.txt
+    SUB_DELIMS = "!$&'()*+,;="
+    ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+    DIGIT = "0123456789"
+    UNRESERVED = ALPHA + DIGIT + "-._~"
+    PCHAR = UNRESERVED + SUB_DELIMS + ":@"
+    PATH = PCHAR + "/"
+    QUERY = PCHAR + "?"
+    FRAGMENT = PCHAR + "?"
+    USERINFO = UNRESERVED + SUB_DELIMS + ":"
+
     @classmethod
     def parse(cls, url, encoding):
         '''Parse the provided url, and return a URL instance'''
@@ -209,17 +220,17 @@ class URL(object):
     def escape(self):
         '''Make sure that the path is correctly escaped'''
         self._path = urllib.quote(
-            urllib.unquote(self._path), safe='-._~!$&\'()*+,;=/:')
+            urllib.unquote(self._path), safe=URL.PATH)
         # Safe characters taken from:
         #    http://tools.ietf.org/html/rfc3986#page-50
         self._query = urllib.quote(urllib.unquote(self._query),
-            safe='-._~!$&\'()*+,;=:@')
+            safe=URL.QUERY)
         # The safe characters for URL parameters seemed a little more vague.
         # They are interpreted here as *pchar despite this page, since the
         # updated RFC seems to offer no replacement
         #    http://tools.ietf.org/html/rfc3986#page-54
         self._params = urllib.quote(urllib.unquote(self._params),
-            safe='-._~!$&\'()*+,;=:@')
+            safe=URL.QUERY)
         return self
 
     def unescape(self):
