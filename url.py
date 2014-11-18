@@ -89,12 +89,14 @@ class URL(object):
         except ValueError:
             port = None
 
-        return cls(parsed.scheme, parsed.hostname, port,
-            parsed.path, parsed.params, parsed.query, parsed.fragment,
-            parsed.username, parsed.password)
+        userinfo = parsed.username
+        if userinfo and parsed.password:
+            userinfo += ':%s' % parsed.password
 
-    def __init__(self, scheme, host, port, path, params, query, fragment,
-        username=None, password=None):
+        return cls(parsed.scheme, parsed.hostname, port,
+            parsed.path, parsed.params, parsed.query, parsed.fragment, userinfo)
+
+    def __init__(self, scheme, host, port, path, params, query, fragment, userinfo=None):
         self._scheme = scheme
         self._host = host
         self._port = port
@@ -105,8 +107,7 @@ class URL(object):
         self._query = re.sub(r'^\?+', '', str(query))
         self._query = re.sub(r'^&|&$', '', re.sub(r'&{2,}', '&', self._query))
         self._fragment = fragment
-        self._username = username
-        self._password = password
+        self._userinfo = userinfo
 
     def equiv(self, other):
         '''Return true if this url is equivalent to another'''
@@ -125,8 +126,7 @@ class URL(object):
             _self._path     == _other._path     and
             _self._params   == _other._params   and
             _self._query    == _other._query    and
-            _self._username == _other._username and
-            _self._password == _other._password)
+            _self._userinfo == _other._userinfo)
 
         if result:
             if _self._port and not _other._port:
@@ -152,8 +152,7 @@ class URL(object):
             self._params   == other._params   and
             self._query    == other._query    and
             self._fragment == other._fragment and
-            self._username == other._username and
-            self._password == other._password)
+            self._userinfo == other._userinfo)
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -188,8 +187,7 @@ class URL(object):
 
     def deuserinfo(self):
         '''Remove any userinfo'''
-        self._username = None
-        self._password = None
+        self._userinfo = None
         return self
 
     def abspath(self):
@@ -269,11 +267,8 @@ class URL(object):
         if self._port:
             netloc += (':' + str(self._port))
 
-        if self._username is not None:
-            if self._password is not None:
-                netloc = '%s:%s@%s' % (self._username, self._password, netloc)
-            else:
-                netloc = '%s@%s' % (self._username, netloc)
+        if self._userinfo is not None:
+            netloc = '%s@%s' % (self._userinfo, netloc)
 
         result = urlparse.urlunparse((str(self._scheme), str(netloc),
             str(self._path), str(self._params), str(self._query),
