@@ -73,6 +73,8 @@ class URL(object):
     FRAGMENT = PCHAR + "?"
     USERINFO = UNRESERVED + SUB_DELIMS + ":"
 
+    PERCENT_ESCAPING_RE = re.compile('(%[a-fA-F0-9]{2}|.)')
+
     @classmethod
     def parse(cls, url, encoding):
         '''Parse the provided url, and return a URL instance'''
@@ -217,21 +219,44 @@ class URL(object):
         '''A shortcut to abspath and escape'''
         return self.abspath().escape()
 
+    @staticmethod
+    def percent_encode(raw, safe):
+        if isinstance(raw, unicode):
+            raw = UTF8.encode
+
+        def replacement(match):
+            string = match.group(1)
+            if len(string) == 1:
+                if string in safe:
+                    return string
+                else:
+                    return '%%%02X' % ord(string)
+            else:
+                return string.upper()
+
+        return URL.PERCENT_ESCAPING_RE.sub(replacement, raw)
+
     def escape(self, strict=False):
         '''Make sure that the path is correctly escaped'''
-        self._path = urllib.quote(
-            urllib.unquote(self._path), safe=URL.PATH)
-        # Safe characters taken from:
-        #    http://tools.ietf.org/html/rfc3986#page-50
-        self._query = urllib.quote(urllib.unquote(self._query),
-            safe=URL.QUERY)
-        # The safe characters for URL parameters seemed a little more vague.
-        # They are interpreted here as *pchar despite this page, since the
-        # updated RFC seems to offer no replacement
-        #    http://tools.ietf.org/html/rfc3986#page-54
-        self._params = urllib.quote(urllib.unquote(self._params),
-            safe=URL.QUERY)
-        return self
+        if strict:
+            self._path = self.percent_encode(self._path, URL.PATH)
+            self._query = self.percent_encode(self._query, URL.QUERY)
+            self._params = self.percent_encode(self._params, URL.QUERY)
+            return self
+        else:
+            self._path = urllib.quote(
+                urllib.unquote(self._path), safe=URL.PATH)
+            # Safe characters taken from:
+            #    http://tools.ietf.org/html/rfc3986#page-50
+            self._query = urllib.quote(urllib.unquote(self._query),
+                safe=URL.QUERY)
+            # The safe characters for URL parameters seemed a little more vague.
+            # They are interpreted here as *pchar despite this page, since the
+            # updated RFC seems to offer no replacement
+            #    http://tools.ietf.org/html/rfc3986#page-54
+            self._params = urllib.quote(urllib.unquote(self._params),
+                safe=URL.QUERY)
+            return self
 
     def unescape(self):
         '''Unescape the path'''
