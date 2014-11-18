@@ -173,6 +173,10 @@ class URL(object):
             q.partition('=')[0].lower() not in params)
         return self
 
+    def deuserinfo(self):
+        '''Remove any userinfo'''
+        return self
+
     def abspath(self):
         '''Clear out any '..' and excessive slashes from the path'''
         # Remove double forward-slashes from the path

@@ -269,6 +269,15 @@ class Test(unittest.TestCase):
             good = base + good
             self.assertEqual(url.parse(bad).defrag().utf8(), good)
 
+    def test_deuserinfo(self):
+        '''Correctly removes userinfo'''
+        examples = [
+            ('http://user:pass@foo.com/', 'http://foo.com/'),
+            ('http://just-user@foo.com/', 'http://foo.com/')
+        ]
+        for bad, good in examples:
+            self.assertEqual(url.parse(bad).deuserinfo().utf8(), good)
+
     def test_punycode(self):
         '''Make sure punycode encoding works correctly'''
         examples = [
