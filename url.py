@@ -219,7 +219,7 @@ class URL(object):
     @staticmethod
     def percent_encode(raw, safe):
         if isinstance(raw, unicode):
-            raw = UTF8.encode
+            raw = UTF8.encode(raw)[0]
 
         def replacement(match):
             string = match.group(1)
