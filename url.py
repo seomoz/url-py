@@ -28,7 +28,7 @@ import codecs
 import urllib
 try:
     import urlparse
-except ImportError:
+except ImportError:  # pragma: no cover
     # Python 3 support
     import urllib.parse as urlparse
 

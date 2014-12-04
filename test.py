@@ -135,6 +135,12 @@ class Test(unittest.TestCase):
             self.assertEqual(
                 url.parse(bad).escape(strict=True).escape(strict=True).utf8(), good)
 
+        # Test Unicode escaping in strict mode
+        u = url.URL(u'http', u'foo.com', None, u'española,nm%2cusa.html', u'', u'gunk=junk+glunk&foo=bar baz', u'')
+        u.escape(strict=True)
+        self.assertTrue(isinstance(u._path, str))
+        self.assertEqual(u._path, 'espa%C3%B1ola,nm%2Cusa.html')
+
     def test_userinfo(self):
         '''Allow a userinfo section'''
         examples = [
