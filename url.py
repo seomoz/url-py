@@ -28,7 +28,7 @@ import codecs
 import urllib
 try:
     import urlparse
-except ImportError:
+except ImportError:  # pragma: no cover
     # Python 3 support
     import urllib.parse as urlparse
 
@@ -62,6 +62,19 @@ class URL(object):
         http://www.ietf.org/rfc/rfc3986.txt
     '''
 
+    # Via http://www.ietf.org/rfc/rfc3986.txt
+    SUB_DELIMS = "!$&'()*+,;="
+    ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+    DIGIT = "0123456789"
+    UNRESERVED = ALPHA + DIGIT + "-._~"
+    PCHAR = UNRESERVED + SUB_DELIMS + ":@"
+    PATH = PCHAR + "/"
+    QUERY = PCHAR + "?"
+    FRAGMENT = PCHAR + "?"
+    USERINFO = UNRESERVED + SUB_DELIMS + ":"
+
+    PERCENT_ESCAPING_RE = re.compile('(%[a-fA-F0-9]{2}|.)')
+
     @classmethod
     def parse(cls, url, encoding):
         '''Parse the provided url, and return a URL instance'''
@@ -76,10 +89,14 @@ class URL(object):
         except ValueError:
             port = None
 
-        return cls(parsed.scheme, parsed.hostname, port,
-            parsed.path, parsed.params, parsed.query, parsed.fragment)
+        userinfo = parsed.username
+        if userinfo and parsed.password:
+            userinfo += ':%s' % parsed.password
 
-    def __init__(self, scheme, host, port, path, params, query, fragment):
+        return cls(parsed.scheme, parsed.hostname, port,
+            parsed.path, parsed.params, parsed.query, parsed.fragment, userinfo)
+
+    def __init__(self, scheme, host, port, path, params, query, fragment, userinfo=None):
         self._scheme = scheme
         self._host = host
         self._port = port
@@ -90,6 +107,7 @@ class URL(object):
         self._query = re.sub(r'^\?+', '', str(query))
         self._query = re.sub(r'^&|&$', '', re.sub(r'&{2,}', '&', self._query))
         self._fragment = fragment
+        self._userinfo = userinfo
 
     def equiv(self, other):
         '''Return true if this url is equivalent to another'''
@@ -103,11 +121,11 @@ class URL(object):
         _other.canonical().defrag().abspath().escape().punycode()
 
         result = (
-            _self._scheme == _other._scheme and
-            _self._host   == _other._host   and
-            _self._path   == _other._path   and
-            _self._params == _other._params and
-            _self._query  == _other._query)
+            _self._scheme   == _other._scheme   and
+            _self._host     == _other._host     and
+            _self._path     == _other._path     and
+            _self._params   == _other._params   and
+            _self._query    == _other._query)
 
         if result:
             if _self._port and not _other._port:
@@ -126,13 +144,14 @@ class URL(object):
         if isinstance(other, basestring):
             return self.__eq__(self.parse(other, 'utf-8'))
         return (
-            self._scheme   == other._scheme and
-            self._host     == other._host   and
-            self._path     == other._path   and
-            self._port     == other._port   and
-            self._params   == other._params and
-            self._query    == other._query  and
-            self._fragment == other._fragment)
+            self._scheme   == other._scheme   and
+            self._host     == other._host     and
+            self._path     == other._path     and
+            self._port     == other._port     and
+            self._params   == other._params   and
+            self._query    == other._query    and
+            self._fragment == other._fragment and
+            self._userinfo == other._userinfo)
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -165,6 +184,11 @@ class URL(object):
             q.partition('=')[0].lower() not in params)
         return self
 
+    def deuserinfo(self):
+        '''Remove any userinfo'''
+        self._userinfo = None
+        return self
+
     def abspath(self):
         '''Clear out any '..' and excessive slashes from the path'''
         # Remove double forward-slashes from the path
@@ -192,21 +216,49 @@ class URL(object):
         '''A shortcut to abspath and escape'''
         return self.abspath().escape()
 
-    def escape(self):
+    @staticmethod
+    def percent_encode(raw, safe):
+        if isinstance(raw, unicode):
+            raw = UTF8.encode(raw)[0]
+
+        def replacement(match):
+            string = match.group(1)
+            if len(string) == 1:
+                if string in safe:
+                    return string
+                else:
+                    return '%%%02X' % ord(string)
+            else:
+                return string.upper()
+
+        return URL.PERCENT_ESCAPING_RE.sub(replacement, raw)
+
+    def escape(self, strict=False):
         '''Make sure that the path is correctly escaped'''
-        self._path = urllib.quote(
-            urllib.unquote(self._path), safe='-._~!$&\'()*+,;=/:')
-        # Safe characters taken from:
-        #    http://tools.ietf.org/html/rfc3986#page-50
-        self._query = urllib.quote(urllib.unquote(self._query),
-            safe='-._~!$&\'()*+,;=:@')
-        # The safe characters for URL parameters seemed a little more vague.
-        # They are interpreted here as *pchar despite this page, since the
-        # updated RFC seems to offer no replacement
-        #    http://tools.ietf.org/html/rfc3986#page-54
-        self._params = urllib.quote(urllib.unquote(self._params),
-            safe='-._~!$&\'()*+,;=:@')
-        return self
+        if strict:
+            self._path = self.percent_encode(self._path, URL.PATH)
+            self._query = self.percent_encode(self._query, URL.QUERY)
+            self._params = self.percent_encode(self._params, URL.QUERY)
+            if self._userinfo:
+                self._userinfo = self.percent_encode(self._userinfo, URL.USERINFO)
+            return self
+        else:
+            self._path = urllib.quote(
+                urllib.unquote(self._path), safe=URL.PATH)
+            # Safe characters taken from:
+            #    http://tools.ietf.org/html/rfc3986#page-50
+            self._query = urllib.quote(urllib.unquote(self._query),
+                safe=URL.QUERY)
+            # The safe characters for URL parameters seemed a little more vague.
+            # They are interpreted here as *pchar despite this page, since the
+            # updated RFC seems to offer no replacement
+            #    http://tools.ietf.org/html/rfc3986#page-54
+            self._params = urllib.quote(urllib.unquote(self._params),
+                safe=URL.QUERY)
+            if self._userinfo:
+                self._userinfo = urllib.quote(urllib.unquote(self._userinfo),
+                    safe=URL.USERINFO)
+            return self
 
     def unescape(self):
         '''Unescape the path'''
@@ -215,9 +267,12 @@ class URL(object):
 
     def encode(self, encoding):
         '''Return the url in an arbitrary encoding'''
-        netloc = self._host
+        netloc = self._host or ''
         if self._port:
             netloc += (':' + str(self._port))
+
+        if self._userinfo is not None:
+            netloc = '%s@%s' % (self._userinfo, netloc)
 
         result = urlparse.urlunparse((str(self._scheme), str(netloc),
             str(self._path), str(self._params), str(self._query),
