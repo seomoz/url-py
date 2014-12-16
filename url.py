@@ -69,7 +69,7 @@ class URL(object):
     UNRESERVED = ALPHA + DIGIT + "-._~"
     PCHAR = UNRESERVED + SUB_DELIMS + ":@"
     PATH = PCHAR + "/"
-    QUERY = PCHAR + "?"
+    QUERY = PCHAR + "?/"
     FRAGMENT = PCHAR + "?"
     USERINFO = UNRESERVED + SUB_DELIMS + ":"
 
