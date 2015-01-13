@@ -63,17 +63,19 @@ class URL(object):
     '''
 
     # Via http://www.ietf.org/rfc/rfc3986.txt
+    GEN_DELIMS = ":/?#[]@"
     SUB_DELIMS = "!$&'()*+,;="
     ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
     DIGIT = "0123456789"
     UNRESERVED = ALPHA + DIGIT + "-._~"
+    RESERVED = GEN_DELIMS + SUB_DELIMS
     PCHAR = UNRESERVED + SUB_DELIMS + ":@"
     PATH = PCHAR + "/"
     QUERY = PCHAR + "?"
     FRAGMENT = PCHAR + "?"
     USERINFO = UNRESERVED + SUB_DELIMS + ":"
 
-    PERCENT_ESCAPING_RE = re.compile('(%[a-fA-F0-9]{2}|.)')
+    PERCENT_ESCAPING_RE = re.compile('(%([a-fA-F0-9]{2})|.)')
 
     @classmethod
     def parse(cls, url, encoding):
@@ -229,6 +231,10 @@ class URL(object):
                 else:
                     return '%%%02X' % ord(string)
             else:
+                # Replace any escaped entities with their equivalent if needed.
+                character = chr(int(match.group(2), 16))
+                if (character in safe) and not (character in URL.RESERVED):
+                    return character
                 return string.upper()
 
         return URL.PERCENT_ESCAPING_RE.sub(replacement, raw)
