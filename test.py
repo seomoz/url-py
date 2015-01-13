@@ -109,6 +109,7 @@ class Test(unittest.TestCase):
         '''Test strict mode escaping'''
         examples = [
             ('danny%27s pub'                , 'danny%27s%20pub'                  ),
+            ('this%5Fand%5Fthat'            , 'this_and_that'                    ),
             ('http://user:pass@foo.com'     , 'http://user:pass@foo.com'         ),
             (u'http://José:no way@foo.com'  , 'http://Jos%C3%A9:no%20way@foo.com'),
             ('http://oops!:don%27t@foo.com' , 'http://oops!:don%27t@foo.com'     ),
