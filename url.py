@@ -71,11 +71,11 @@ class URL(object):
     RESERVED = GEN_DELIMS + SUB_DELIMS
     PCHAR = UNRESERVED + SUB_DELIMS + ":@"
     PATH = PCHAR + "/"
-    QUERY = PCHAR + "?"
-    FRAGMENT = PCHAR + "?"
+    QUERY = PCHAR + "/?"
+    FRAGMENT = PCHAR + "/?"
     USERINFO = UNRESERVED + SUB_DELIMS + ":"
 
-    PERCENT_ESCAPING_RE = re.compile('(%([a-fA-F0-9]{2})|.)')
+    PERCENT_ESCAPING_RE = re.compile('(%([a-fA-F0-9]{2})|.)', re.S)
 
     @classmethod
     def parse(cls, url, encoding):
