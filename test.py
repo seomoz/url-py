@@ -109,11 +109,14 @@ class Test(unittest.TestCase):
         '''Test strict mode escaping'''
         examples = [
             ('danny%27s pub'                , 'danny%27s%20pub'                  ),
+            ('this%5Fand%5Fthat'            , 'this_and_that'                    ),
             ('http://user:pass@foo.com'     , 'http://user:pass@foo.com'         ),
             (u'http://José:no way@foo.com'  , 'http://Jos%C3%A9:no%20way@foo.com'),
             ('http://oops!:don%27t@foo.com' , 'http://oops!:don%27t@foo.com'     ),
             (u'española,nm%2cusa.html?gunk=junk+glunk&foo=bar baz',
-                'espa%C3%B1ola,nm%2Cusa.html?gunk=junk+glunk&foo=bar%20baz')
+                'espa%C3%B1ola,nm%2Cusa.html?gunk=junk+glunk&foo=bar%20baz'),
+            ('http://foo.com/bar\nbaz.html\n', 'http://foo.com/bar%0Abaz.html%0A'),
+            ('http://foo.com/bar.jsp?param=\n/value%2F', 'http://foo.com/bar.jsp?param=%0A/value%2F'),
         ]
 
         base = 'http://testing.com/'
