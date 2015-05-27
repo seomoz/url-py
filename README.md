@@ -114,6 +114,10 @@ and session ids. To strip out all such parameters from your url:
     >>> url.parse('http://foo.com/?do=1&not=2&want=3&this=4').deparam(['do', 'not', 'want']).utf8()
     'http://foo.com/?this=4'
 
+Arguments to deparam should be lowercase. The removal is case insensitive 
+(in above example, we would also have stripped parameters like "DO", "NoT",
+or "wanT").
+
 `abspath`
 ---------
 Like its `os.path` namesake, this makes sure that the path of the url is
