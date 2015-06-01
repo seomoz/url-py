@@ -186,6 +186,10 @@ class URL(object):
             q.partition('=')[0].lower() not in params)
         return self
 
+    def filter_params(self, function):
+        '''Remove parameters if function(name, value)'''
+        return self
+
     def deuserinfo(self):
         '''Remove any userinfo'''
         self._userinfo = None

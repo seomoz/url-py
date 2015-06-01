@@ -28,6 +28,22 @@ class Test(unittest.TestCase):
             good = base + good
             self.assertEqual(url.parse(bad).deparam(['c']).utf8(), good)
 
+    def test_filter_params(self):
+        '''We can filter parameters.'''
+        def function(name, value):
+            '''Only keep even-valued parameters.'''
+            print "%s = %s" % (name, value)
+            return int(value) % 2
+        examples = [
+            ('?a=1&b=2', '?b=2'),
+            (';a=1;b=2', ';b=2')
+        ]
+        base = 'http://testing.com/page'
+        for bad, good in examples:
+            bad = base + bad
+            good = base + good
+            self.assertEqual(url.parse(bad).filter_params(function).utf8(), good)
+
     def test_lower(self):
         '''Can lowercase the domain name correctly'''
         examples = [
