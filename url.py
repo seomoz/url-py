@@ -178,16 +178,17 @@ class URL(object):
 
     def deparam(self, params):
         '''Strip any of the provided parameters out of the url'''
-        # And remove all the black-listed query parameters
-        self._query = '&'.join(q for q in self._query.split('&')
-            if q.partition('=')[0].lower() not in params)
-        # And remove all the black-listed param parameters
-        self._params = ';'.join(q for q in self._params.split(';') if
-            q.partition('=')[0].lower() not in params)
-        return self
+        def function(name, _):
+            return name.lower() in params
+        return self.filter_params(function)
 
     def filter_params(self, function):
         '''Remove parameters if function(name, value)'''
+        def keep(query):
+            name, _, value = query.partition('=')
+            return not function(name, value)
+        self._query = '&'.join(q for q in self._query.split('&') if q and keep(q))
+        self._params = ';'.join(q for q in self._params.split(';') if q and keep(q))
         return self
 
     def deuserinfo(self):
