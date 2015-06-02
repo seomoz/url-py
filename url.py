@@ -178,8 +178,9 @@ class URL(object):
 
     def deparam(self, params):
         '''Strip any of the provided parameters out of the url'''
+        lowered = set([p.lower() for p in params])
         def function(name, _):
-            return name.lower() in params
+            return name.lower() in lowered
         return self.filter_params(function)
 
     def filter_params(self, function):
