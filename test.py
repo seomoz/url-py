@@ -28,6 +28,18 @@ class Test(unittest.TestCase):
             good = base + good
             self.assertEqual(url.parse(bad).deparam(['c']).utf8(), good)
 
+    def test_deparam_case_insensitivity(self):
+        '''Parameters to remove can be supplied in any case.'''
+        examples = [
+            ('?hELLo=2', ''),
+            ('?HELLo=2', '')
+        ]
+        base = 'http://testing.com/page'
+        for bad, good in examples:
+            bad = base + bad
+            good = base + good
+            self.assertEqual(url.parse(bad).deparam(['HeLlO']).utf8(), good)
+
     def test_filter_params(self):
         '''We can filter parameters.'''
         def function(name, value):
