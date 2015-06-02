@@ -58,7 +58,10 @@ class Test(unittest.TestCase):
             ('a/b/../'         , 'a/'           ),
             ('.'               , ''             ),
             ('../../..'        , ''             ),
-            ('////foo'         , 'foo'          )
+            ('////foo'         , 'foo'          ),
+            ('/foo/../whiz.'   , 'whiz.'        ),
+            ('/foo/whiz./'     , 'foo/whiz./'   ),
+            ('/foo/whiz./bar'  , 'foo/whiz./bar')
         ]
 
         base = 'http://testing.com/'
