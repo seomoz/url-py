@@ -52,6 +52,6 @@ cleaning parameter and query strings, and a little more sanitization.
 	install_requires = [
 		'coverage',
 		'nose',
-		'publicsuffix'
+		'publicsuffix2'
 	]
 )
