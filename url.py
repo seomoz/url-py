@@ -63,17 +63,19 @@ class URL(object):
     '''
 
     # Via http://www.ietf.org/rfc/rfc3986.txt
+    GEN_DELIMS = ":/?#[]@"
     SUB_DELIMS = "!$&'()*+,;="
     ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
     DIGIT = "0123456789"
     UNRESERVED = ALPHA + DIGIT + "-._~"
+    RESERVED = GEN_DELIMS + SUB_DELIMS
     PCHAR = UNRESERVED + SUB_DELIMS + ":@"
     PATH = PCHAR + "/"
-    QUERY = PCHAR + "?"
-    FRAGMENT = PCHAR + "?"
+    QUERY = PCHAR + "/?"
+    FRAGMENT = PCHAR + "/?"
     USERINFO = UNRESERVED + SUB_DELIMS + ":"
 
-    PERCENT_ESCAPING_RE = re.compile('(%[a-fA-F0-9]{2}|.)')
+    PERCENT_ESCAPING_RE = re.compile('(%([a-fA-F0-9]{2})|.)', re.S)
 
     @classmethod
     def parse(cls, url, encoding):
@@ -176,12 +178,18 @@ class URL(object):
 
     def deparam(self, params):
         '''Strip any of the provided parameters out of the url'''
-        # And remove all the black-listed query parameters
-        self._query = '&'.join(q for q in self._query.split('&')
-            if q.partition('=')[0].lower() not in params)
-        # And remove all the black-listed param parameters
-        self._params = ';'.join(q for q in self._params.split(';') if
-            q.partition('=')[0].lower() not in params)
+        lowered = set([p.lower() for p in params])
+        def function(name, _):
+            return name.lower() in lowered
+        return self.filter_params(function)
+
+    def filter_params(self, function):
+        '''Remove parameters if function(name, value)'''
+        def keep(query):
+            name, _, value = query.partition('=')
+            return not function(name, value)
+        self._query = '&'.join(q for q in self._query.split('&') if q and keep(q))
+        self._params = ';'.join(q for q in self._params.split(';') if q and keep(q))
         return self
 
     def deuserinfo(self):
@@ -195,16 +203,20 @@ class URL(object):
         path = re.sub(r'\/{2,}', '/', self._path)
         # With that done, go through and remove all the relative references
         unsplit = []
+        directory = False
         for part in path.split('/'):
             # If we encounter the parent directory, and there's
             # a segment to pop off, then we should pop it off.
             if part == '..' and (not unsplit or unsplit.pop() != None):
-                pass
+                directory = True
             elif part != '.':
                 unsplit.append(part)
+                directory = False
+            else:
+                directory = True
 
         # With all these pieces, assemble!
-        if self._path.endswith('.'):
+        if directory:
             # If the path ends with a period, then it refers to a directory,
             # not a file path
             self._path = '/'.join(unsplit) + '/'
@@ -229,6 +241,10 @@ class URL(object):
                 else:
                     return '%%%02X' % ord(string)
             else:
+                # Replace any escaped entities with their equivalent if needed.
+                character = chr(int(match.group(2), 16))
+                if (character in safe) and not (character in URL.RESERVED):
+                    return character
                 return string.upper()
 
         return URL.PERCENT_ESCAPING_RE.sub(replacement, raw)
