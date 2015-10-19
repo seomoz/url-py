@@ -429,12 +429,15 @@ def test_relative():
 
     base = url.parse('http://testing.com/a/b/c')
     examples = [
-        ('../foo'            , 'http://testing.com/a/foo'  ),
-        ('./foo'             , 'http://testing.com/a/b/foo'),
-        ('foo'               , 'http://testing.com/a/b/foo'),
-        ('/foo'              , 'http://testing.com/foo'    ),
-        ('http://foo.com/bar', 'http://foo.com/bar'        ),
-        (u'/foo'             , 'http://testing.com/foo'    )
+        ('../foo'            , 'http://testing.com/a/foo'          ),
+        ('./foo'             , 'http://testing.com/a/b/foo'        ),
+        ('foo'               , 'http://testing.com/a/b/foo'        ),
+        ('/foo'              , 'http://testing.com/foo'            ),
+        ('http://foo.com/bar', 'http://foo.com/bar'                ),
+        (u'/foo'             , 'http://testing.com/foo'            ),
+        (u'/\u200Bfoo'       , 'http://testing.com/\xe2\x80\x8bfoo'),
+        (u'http://www\u200B.tiagopriscostudio.com',
+            'http://www\xe2\x80\x8b.tiagopriscostudio.com/')
     ]
 
     for rel, absolute in examples:

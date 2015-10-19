@@ -295,13 +295,13 @@ class URL(object):
             self._fragment))
         return result.decode('utf-8').encode(encoding)
 
-    def relative(self, path, encoding='utf-8'):
+    def relative(self, path, encoding='utf-8', errors='replace'):
         '''Evaluate the new path relative to the current url'''
         if not isinstance(path, str):
-            newurl = urlparse.urljoin(self.utf8(),
-                str(path).decode(encoding).encode('utf-8'))
+            newurl = urlparse.urljoin(self.utf8(), path.encode('utf-8', errors))
         else:
-            newurl = urlparse.urljoin(self.utf8(), path.encode('utf-8'))
+            newurl = urlparse.urljoin(
+                self.utf8(), path.decode(encoding, errors).encode('utf-8', errors))
         return URL.parse(newurl, 'utf-8')
 
     def punycode(self):
