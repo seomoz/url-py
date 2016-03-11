@@ -479,9 +479,11 @@ def test_pld():
         assert_equal(url.parse(query).pld(), result)
 
     examples = [
-        ('http://foo.com/bar'    , 'foo.com'),
-        ('http://bar.foo.com/bar', 'foo.com'),
-        ('/foo'                  , '')
+        ('http://foo.com/bar'                , 'foo.com'),
+        ('http://bar.foo.com/bar'            , 'foo.com'),
+        ('/foo'                              , ''),
+        ('http://foo.од.срб/bar'             , 'foo.од.срб'),
+        ('http://foo.xn--d1at.xn--90a3ac/bar', 'foo.xn--d1at.xn--90a3ac'),
     ]
     for query, result in examples:
         yield test, query, result
