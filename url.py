@@ -322,6 +322,10 @@ class URL(object):
     ###########################################################################
     # Information about the domain
     ###########################################################################
+    def hostname(self):
+        '''Return the hostname of the url.'''
+        return self._host or ''
+
     def pld(self):
         '''Return the 'pay-level domain' of the url
             (http://moz.com/blog/what-the-heck-should-we-call-domaincom)'''

@@ -474,6 +474,19 @@ def test_absolute():
         yield test, query, result
 
 
+def test_hostname():
+    def test(query, result):
+        assert_equal(url.parse(query).hostname(), result)
+
+    examples = [
+        ('http://foo.com/bar',     'foo.com'),
+        ('http://bar.foo.com/bar', 'bar.foo.com'),
+        ('/foo',                   '')
+    ]
+    for query, result in examples:
+        yield test, query, result
+
+
 def test_pld():
     def test(query, result):
         assert_equal(url.parse(query).pld(), result)
