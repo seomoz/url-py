@@ -494,9 +494,11 @@ def test_tld():
         assert_equal(url.parse(query).tld(), result)
 
     examples = [
-        ('http://foo.com/bar'    , 'com'),
-        ('http://bar.foo.com/bar', 'com'),
-        ('/foo'                  , '')
+        ('http://foo.com/bar'            , 'com'),
+        ('http://bar.foo.com/bar'        , 'com'),
+        ('/foo'                          , ''),
+        ('http://foo.од.срб/bar'         , 'од.срб'),
+        ('http://foo.xn--d1at.xn--90a3ac', 'xn--d1at.xn--90a3ac'),
     ]
     for query, result in examples:
         yield test, query, result
