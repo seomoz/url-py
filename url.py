@@ -228,6 +228,12 @@ class URL(object):
         '''A shortcut to abspath and escape'''
         return self.abspath().escape()
 
+    def remove_default_port(self):
+        '''If a port is provided an is the default, remove it.'''
+        if self._port and self._scheme and (self._port == PORTS[self._scheme]):
+            self._port = None
+        return self
+
     @staticmethod
     def percent_encode(raw, safe):
         if isinstance(raw, unicode):
