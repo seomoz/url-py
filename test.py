@@ -459,6 +459,20 @@ def test_sanitize():
         yield test, bad, good
 
 
+def test_remove_default_port():
+    def test(query, result):
+        assert_equal(url.parse(query).remove_default_port().utf8(), result)
+
+    examples = [
+        ('http://foo.com:80/'  , 'http://foo.com/'     ),
+        ('https://foo.com:443/', 'https://foo.com/'    ),
+        ('http://foo.com:8080/', 'http://foo.com:8080/')
+    ]
+
+    for query, result in examples:
+        yield test, query, result
+
+
 def test_absolute():
     def test(query, result):
         assert_equal(url.parse(query).absolute(), result)
