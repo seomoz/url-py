@@ -101,7 +101,7 @@ class URL(object):
     def __init__(self, scheme, host, port, path, params, query, fragment, userinfo=None):
         self.scheme = scheme
         self.host = host
-        self._port = port
+        self.port = port
         self.path = path or '/'
         self._params = re.sub(r'^;+', '', str(params))
         self._params = re.sub(r'^;|;$', '', re.sub(r';{2,}', ';', self._params))
@@ -130,14 +130,14 @@ class URL(object):
             _self._query    == _other._query)
 
         if result:
-            if _self._port and not _other._port:
-                # Make sure _self._port is the default for the scheme
-                return _self._port == PORTS.get(_self.scheme, None)
-            elif _other._port and not _self._port:
-                # Make sure _other._port is the default for the scheme
-                return _other._port == PORTS.get(_other.scheme, None)
+            if _self.port and not _other.port:
+                # Make sure _self.port is the default for the scheme
+                return _self.port == PORTS.get(_self.scheme, None)
+            elif _other.port and not _self.port:
+                # Make sure _other.port is the default for the scheme
+                return _other.port == PORTS.get(_other.scheme, None)
             else:
-                return _self._port == _other._port
+                return _self.port == _other.port
         else:
             return False
 
@@ -149,7 +149,7 @@ class URL(object):
             self.scheme    == other.scheme    and
             self.host      == other.host      and
             self.path      == other.path      and
-            self._port     == other._port     and
+            self.port      == other.port      and
             self._params   == other._params   and
             self._query    == other._query    and
             self._fragment == other._fragment and
@@ -230,8 +230,8 @@ class URL(object):
 
     def remove_default_port(self):
         '''If a port is provided an is the default, remove it.'''
-        if self._port and self.scheme and (self._port == PORTS[self.scheme]):
-            self._port = None
+        if self.port and self.scheme and (self.port == PORTS[self.scheme]):
+            self.port = None
         return self
 
     @staticmethod
@@ -290,8 +290,8 @@ class URL(object):
     def encode(self, encoding):
         '''Return the url in an arbitrary encoding'''
         netloc = self.host or ''
-        if self._port:
-            netloc += (':' + str(self._port))
+        if self.port:
+            netloc += (':' + str(self.port))
 
         if self._userinfo is not None:
             netloc = '%s@%s' % (self._userinfo, netloc)
