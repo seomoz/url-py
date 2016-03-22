@@ -100,7 +100,7 @@ class URL(object):
 
     def __init__(self, scheme, host, port, path, params, query, fragment, userinfo=None):
         self.scheme = scheme
-        self._host = host
+        self.host = host
         self._port = port
         self._path = path or '/'
         self._params = re.sub(r'^;+', '', str(params))
@@ -124,7 +124,7 @@ class URL(object):
 
         result = (
             _self.scheme    == _other.scheme    and
-            _self._host     == _other._host     and
+            _self.host      == _other.host      and
             _self._path     == _other._path     and
             _self._params   == _other._params   and
             _self._query    == _other._query)
@@ -147,7 +147,7 @@ class URL(object):
             return self.__eq__(self.parse(other, 'utf-8'))
         return (
             self.scheme    == other.scheme    and
-            self._host     == other._host     and
+            self.host      == other.host      and
             self._path     == other._path     and
             self._port     == other._port     and
             self._params   == other._params   and
@@ -289,7 +289,7 @@ class URL(object):
 
     def encode(self, encoding):
         '''Return the url in an arbitrary encoding'''
-        netloc = self._host or ''
+        netloc = self.host or ''
         if self._port:
             netloc += (':' + str(self._port))
 
@@ -312,16 +312,16 @@ class URL(object):
 
     def punycode(self):
         '''Convert to punycode hostname'''
-        if self._host:
-            self._host = IDNA.encode(self._host.decode('utf-8'))[0]
+        if self.host:
+            self.host = IDNA.encode(self.host.decode('utf-8'))[0]
             return self
         raise TypeError('Cannot punycode a relative url (%s)' % repr(self))
 
     def unpunycode(self):
         '''Convert to an unpunycoded hostname'''
-        if self._host:
-            self._host = IDNA.decode(
-                self._host.decode('utf-8'))[0].encode('utf-8')
+        if self.host:
+            self.host = IDNA.decode(
+                self.host.decode('utf-8'))[0].encode('utf-8')
             return self
         raise TypeError('Cannot unpunycode a relative url (%s)' % repr(self))
 
@@ -330,18 +330,18 @@ class URL(object):
     ###########################################################################
     def hostname(self):
         '''Return the hostname of the url.'''
-        return self._host or ''
+        return self.host or ''
 
     def pld(self):
         '''Return the 'pay-level domain' of the url
             (http://moz.com/blog/what-the-heck-should-we-call-domaincom)'''
-        if self._host:
-            return psl.get_public_suffix(self._host)
+        if self.host:
+            return psl.get_public_suffix(self.host)
         return ''
 
     def tld(self):
         '''Return the top-level domain of a url'''
-        if self._host:
+        if self.host:
             return '.'.join(self.pld().split('.')[1:])
         return ''
 
@@ -351,7 +351,7 @@ class URL(object):
     def absolute(self):
         '''Return True if this is a fully-qualified URL with a hostname and
         everything'''
-        return bool(self._host)
+        return bool(self.host)
 
     ###########################################################################
     # Get a string representation. These methods can't be chained, as they
