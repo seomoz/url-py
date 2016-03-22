@@ -109,7 +109,7 @@ class URL(object):
         self.query = re.sub(r'^\?+', '', str(query))
         self.query = re.sub(r'^&|&$', '', re.sub(r'&{2,}', '&', self.query))
         self.fragment = fragment
-        self._userinfo = userinfo
+        self.userinfo = userinfo
 
     def equiv(self, other):
         '''Return true if this url is equivalent to another'''
@@ -153,7 +153,7 @@ class URL(object):
             self.params    == other.params    and
             self.query     == other.query     and
             self.fragment  == other.fragment  and
-            self._userinfo == other._userinfo)
+            self.userinfo  == other.userinfo)
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -194,7 +194,7 @@ class URL(object):
 
     def deuserinfo(self):
         '''Remove any userinfo'''
-        self._userinfo = None
+        self.userinfo = None
         return self
 
     def abspath(self):
@@ -261,8 +261,8 @@ class URL(object):
             self.path = self.percent_encode(self.path, URL.PATH)
             self.query = self.percent_encode(self.query, URL.QUERY)
             self.params = self.percent_encode(self.params, URL.QUERY)
-            if self._userinfo:
-                self._userinfo = self.percent_encode(self._userinfo, URL.USERINFO)
+            if self.userinfo:
+                self.userinfo = self.percent_encode(self.userinfo, URL.USERINFO)
             return self
         else:
             self.path = urllib.quote(
@@ -277,8 +277,8 @@ class URL(object):
             #    http://tools.ietf.org/html/rfc3986#page-54
             self.params = urllib.quote(urllib.unquote(self.params),
                 safe=URL.QUERY)
-            if self._userinfo:
-                self._userinfo = urllib.quote(urllib.unquote(self._userinfo),
+            if self.userinfo:
+                self.userinfo = urllib.quote(urllib.unquote(self.userinfo),
                     safe=URL.USERINFO)
             return self
 
@@ -293,8 +293,8 @@ class URL(object):
         if self.port:
             netloc += (':' + str(self.port))
 
-        if self._userinfo is not None:
-            netloc = '%s@%s' % (self._userinfo, netloc)
+        if self.userinfo is not None:
+            netloc = '%s@%s' % (self.userinfo, netloc)
 
         result = urlparse.urlunparse((str(self.scheme), str(netloc),
             str(self.path), str(self.params), str(self.query),
