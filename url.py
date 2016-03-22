@@ -106,8 +106,8 @@ class URL(object):
         self.params = re.sub(r'^;+', '', str(params))
         self.params = re.sub(r'^;|;$', '', re.sub(r';{2,}', ';', self.params))
         # Strip off extra leading ?'s
-        self._query = re.sub(r'^\?+', '', str(query))
-        self._query = re.sub(r'^&|&$', '', re.sub(r'&{2,}', '&', self._query))
+        self.query = re.sub(r'^\?+', '', str(query))
+        self.query = re.sub(r'^&|&$', '', re.sub(r'&{2,}', '&', self.query))
         self._fragment = fragment
         self._userinfo = userinfo
 
@@ -127,7 +127,7 @@ class URL(object):
             _self.host      == _other.host      and
             _self.path      == _other.path      and
             _self.params    == _other.params    and
-            _self._query    == _other._query)
+            _self.query     == _other.query)
 
         if result:
             if _self.port and not _other.port:
@@ -151,7 +151,7 @@ class URL(object):
             self.path      == other.path      and
             self.port      == other.port      and
             self.params    == other.params    and
-            self._query    == other._query    and
+            self.query     == other.query     and
             self._fragment == other._fragment and
             self._userinfo == other._userinfo)
 
@@ -167,7 +167,7 @@ class URL(object):
     def canonical(self):
         '''Canonicalize this url. This includes reordering parameters and args
         to have a consistent ordering'''
-        self._query = '&'.join(sorted([q for q in self._query.split('&')]))
+        self.query = '&'.join(sorted([q for q in self.query.split('&')]))
         self.params = ';'.join(sorted([q for q in self.params.split(';')]))
         return self
 
@@ -188,7 +188,7 @@ class URL(object):
         def keep(query):
             name, _, value = query.partition('=')
             return not function(name, value)
-        self._query = '&'.join(q for q in self._query.split('&') if q and keep(q))
+        self.query = '&'.join(q for q in self.query.split('&') if q and keep(q))
         self.params = ';'.join(q for q in self.params.split(';') if q and keep(q))
         return self
 
@@ -259,7 +259,7 @@ class URL(object):
         '''Make sure that the path is correctly escaped'''
         if strict:
             self.path = self.percent_encode(self.path, URL.PATH)
-            self._query = self.percent_encode(self._query, URL.QUERY)
+            self.query = self.percent_encode(self.query, URL.QUERY)
             self.params = self.percent_encode(self.params, URL.QUERY)
             if self._userinfo:
                 self._userinfo = self.percent_encode(self._userinfo, URL.USERINFO)
@@ -269,7 +269,7 @@ class URL(object):
                 urllib.unquote(self.path), safe=URL.PATH)
             # Safe characters taken from:
             #    http://tools.ietf.org/html/rfc3986#page-50
-            self._query = urllib.quote(urllib.unquote(self._query),
+            self.query = urllib.quote(urllib.unquote(self.query),
                 safe=URL.QUERY)
             # The safe characters for URL parameters seemed a little more vague.
             # They are interpreted here as *pchar despite this page, since the
@@ -297,7 +297,7 @@ class URL(object):
             netloc = '%s@%s' % (self._userinfo, netloc)
 
         result = urlparse.urlunparse((str(self.scheme), str(netloc),
-            str(self.path), str(self.params), str(self._query),
+            str(self.path), str(self.params), str(self.query),
             self._fragment))
         return result.decode('utf-8').encode(encoding)
 
