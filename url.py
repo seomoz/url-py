@@ -99,7 +99,7 @@ class URL(object):
             parsed.path, parsed.params, parsed.query, parsed.fragment, userinfo)
 
     def __init__(self, scheme, host, port, path, params, query, fragment, userinfo=None):
-        self._scheme = scheme
+        self.scheme = scheme
         self._host = host
         self._port = port
         self._path = path or '/'
@@ -123,7 +123,7 @@ class URL(object):
         _other.canonical().defrag().abspath().escape().punycode()
 
         result = (
-            _self._scheme   == _other._scheme   and
+            _self.scheme    == _other.scheme    and
             _self._host     == _other._host     and
             _self._path     == _other._path     and
             _self._params   == _other._params   and
@@ -132,10 +132,10 @@ class URL(object):
         if result:
             if _self._port and not _other._port:
                 # Make sure _self._port is the default for the scheme
-                return _self._port == PORTS.get(_self._scheme, None)
+                return _self._port == PORTS.get(_self.scheme, None)
             elif _other._port and not _self._port:
                 # Make sure _other._port is the default for the scheme
-                return _other._port == PORTS.get(_other._scheme, None)
+                return _other._port == PORTS.get(_other.scheme, None)
             else:
                 return _self._port == _other._port
         else:
@@ -146,7 +146,7 @@ class URL(object):
         if isinstance(other, basestring):
             return self.__eq__(self.parse(other, 'utf-8'))
         return (
-            self._scheme   == other._scheme   and
+            self.scheme    == other.scheme    and
             self._host     == other._host     and
             self._path     == other._path     and
             self._port     == other._port     and
@@ -230,7 +230,7 @@ class URL(object):
 
     def remove_default_port(self):
         '''If a port is provided an is the default, remove it.'''
-        if self._port and self._scheme and (self._port == PORTS[self._scheme]):
+        if self._port and self.scheme and (self._port == PORTS[self.scheme]):
             self._port = None
         return self
 
@@ -296,7 +296,7 @@ class URL(object):
         if self._userinfo is not None:
             netloc = '%s@%s' % (self._userinfo, netloc)
 
-        result = urlparse.urlunparse((str(self._scheme), str(netloc),
+        result = urlparse.urlunparse((str(self.scheme), str(netloc),
             str(self._path), str(self._params), str(self._query),
             self._fragment))
         return result.decode('utf-8').encode(encoding)
