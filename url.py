@@ -108,7 +108,7 @@ class URL(object):
         # Strip off extra leading ?'s
         self.query = re.sub(r'^\?+', '', str(query))
         self.query = re.sub(r'^&|&$', '', re.sub(r'&{2,}', '&', self.query))
-        self._fragment = fragment
+        self.fragment = fragment
         self._userinfo = userinfo
 
     def equiv(self, other):
@@ -152,7 +152,7 @@ class URL(object):
             self.port      == other.port      and
             self.params    == other.params    and
             self.query     == other.query     and
-            self._fragment == other._fragment and
+            self.fragment  == other.fragment  and
             self._userinfo == other._userinfo)
 
     def __ne__(self, other):
@@ -173,7 +173,7 @@ class URL(object):
 
     def defrag(self):
         '''Remove the fragment from this url'''
-        self._fragment = None
+        self.fragment = None
         return self
 
     def deparam(self, params):
@@ -298,7 +298,7 @@ class URL(object):
 
         result = urlparse.urlunparse((str(self.scheme), str(netloc),
             str(self.path), str(self.params), str(self.query),
-            self._fragment))
+            self.fragment))
         return result.decode('utf-8').encode(encoding)
 
     def relative(self, path, encoding='utf-8', errors='replace'):
