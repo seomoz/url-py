@@ -103,8 +103,8 @@ class URL(object):
         self.host = host
         self.port = port
         self.path = path or '/'
-        self._params = re.sub(r'^;+', '', str(params))
-        self._params = re.sub(r'^;|;$', '', re.sub(r';{2,}', ';', self._params))
+        self.params = re.sub(r'^;+', '', str(params))
+        self.params = re.sub(r'^;|;$', '', re.sub(r';{2,}', ';', self.params))
         # Strip off extra leading ?'s
         self._query = re.sub(r'^\?+', '', str(query))
         self._query = re.sub(r'^&|&$', '', re.sub(r'&{2,}', '&', self._query))
@@ -126,7 +126,7 @@ class URL(object):
             _self.scheme    == _other.scheme    and
             _self.host      == _other.host      and
             _self.path      == _other.path      and
-            _self._params   == _other._params   and
+            _self.params    == _other.params    and
             _self._query    == _other._query)
 
         if result:
@@ -150,7 +150,7 @@ class URL(object):
             self.host      == other.host      and
             self.path      == other.path      and
             self.port      == other.port      and
-            self._params   == other._params   and
+            self.params    == other.params    and
             self._query    == other._query    and
             self._fragment == other._fragment and
             self._userinfo == other._userinfo)
@@ -168,7 +168,7 @@ class URL(object):
         '''Canonicalize this url. This includes reordering parameters and args
         to have a consistent ordering'''
         self._query = '&'.join(sorted([q for q in self._query.split('&')]))
-        self._params = ';'.join(sorted([q for q in self._params.split(';')]))
+        self.params = ';'.join(sorted([q for q in self.params.split(';')]))
         return self
 
     def defrag(self):
@@ -189,7 +189,7 @@ class URL(object):
             name, _, value = query.partition('=')
             return not function(name, value)
         self._query = '&'.join(q for q in self._query.split('&') if q and keep(q))
-        self._params = ';'.join(q for q in self._params.split(';') if q and keep(q))
+        self.params = ';'.join(q for q in self.params.split(';') if q and keep(q))
         return self
 
     def deuserinfo(self):
@@ -260,7 +260,7 @@ class URL(object):
         if strict:
             self.path = self.percent_encode(self.path, URL.PATH)
             self._query = self.percent_encode(self._query, URL.QUERY)
-            self._params = self.percent_encode(self._params, URL.QUERY)
+            self.params = self.percent_encode(self.params, URL.QUERY)
             if self._userinfo:
                 self._userinfo = self.percent_encode(self._userinfo, URL.USERINFO)
             return self
@@ -275,7 +275,7 @@ class URL(object):
             # They are interpreted here as *pchar despite this page, since the
             # updated RFC seems to offer no replacement
             #    http://tools.ietf.org/html/rfc3986#page-54
-            self._params = urllib.quote(urllib.unquote(self._params),
+            self.params = urllib.quote(urllib.unquote(self.params),
                 safe=URL.QUERY)
             if self._userinfo:
                 self._userinfo = urllib.quote(urllib.unquote(self._userinfo),
@@ -297,7 +297,7 @@ class URL(object):
             netloc = '%s@%s' % (self._userinfo, netloc)
 
         result = urlparse.urlunparse((str(self.scheme), str(netloc),
-            str(self.path), str(self._params), str(self._query),
+            str(self.path), str(self.params), str(self._query),
             self._fragment))
         return result.decode('utf-8').encode(encoding)
 
