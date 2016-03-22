@@ -181,8 +181,8 @@ def test_strict_unicode_escape():
     '''Test Unicode escaping in strict mode'''
     u = url.URL(u'http', u'foo.com', None, u'española,nm%2cusa.html', u'', u'gunk=junk+glunk&foo=bar baz', u'')
     u.escape(strict=True)
-    assert isinstance(u._path, str)
-    assert_equal(u._path, 'espa%C3%B1ola,nm%2Cusa.html')
+    assert isinstance(u.path, str)
+    assert_equal(u.path, 'espa%C3%B1ola,nm%2Cusa.html')
 
 
 def test_userinfo():

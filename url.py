@@ -102,7 +102,7 @@ class URL(object):
         self.scheme = scheme
         self.host = host
         self._port = port
-        self._path = path or '/'
+        self.path = path or '/'
         self._params = re.sub(r'^;+', '', str(params))
         self._params = re.sub(r'^;|;$', '', re.sub(r';{2,}', ';', self._params))
         # Strip off extra leading ?'s
@@ -125,7 +125,7 @@ class URL(object):
         result = (
             _self.scheme    == _other.scheme    and
             _self.host      == _other.host      and
-            _self._path     == _other._path     and
+            _self.path      == _other.path      and
             _self._params   == _other._params   and
             _self._query    == _other._query)
 
@@ -148,7 +148,7 @@ class URL(object):
         return (
             self.scheme    == other.scheme    and
             self.host      == other.host      and
-            self._path     == other._path     and
+            self.path      == other.path      and
             self._port     == other._port     and
             self._params   == other._params   and
             self._query    == other._query    and
@@ -200,7 +200,7 @@ class URL(object):
     def abspath(self):
         '''Clear out any '..' and excessive slashes from the path'''
         # Remove double forward-slashes from the path
-        path = re.sub(r'\/{2,}', '/', self._path)
+        path = re.sub(r'\/{2,}', '/', self.path)
         # With that done, go through and remove all the relative references
         unsplit = []
         directory = False
@@ -219,9 +219,9 @@ class URL(object):
         if directory:
             # If the path ends with a period, then it refers to a directory,
             # not a file path
-            self._path = '/'.join(unsplit) + '/'
+            self.path = '/'.join(unsplit) + '/'
         else:
-            self._path = '/'.join(unsplit)
+            self.path = '/'.join(unsplit)
         return self
 
     def sanitize(self):
@@ -258,15 +258,15 @@ class URL(object):
     def escape(self, strict=False):
         '''Make sure that the path is correctly escaped'''
         if strict:
-            self._path = self.percent_encode(self._path, URL.PATH)
+            self.path = self.percent_encode(self.path, URL.PATH)
             self._query = self.percent_encode(self._query, URL.QUERY)
             self._params = self.percent_encode(self._params, URL.QUERY)
             if self._userinfo:
                 self._userinfo = self.percent_encode(self._userinfo, URL.USERINFO)
             return self
         else:
-            self._path = urllib.quote(
-                urllib.unquote(self._path), safe=URL.PATH)
+            self.path = urllib.quote(
+                urllib.unquote(self.path), safe=URL.PATH)
             # Safe characters taken from:
             #    http://tools.ietf.org/html/rfc3986#page-50
             self._query = urllib.quote(urllib.unquote(self._query),
@@ -284,7 +284,7 @@ class URL(object):
 
     def unescape(self):
         '''Unescape the path'''
-        self._path = urllib.unquote(self._path)
+        self.path = urllib.unquote(self.path)
         return self
 
     def encode(self, encoding):
@@ -297,7 +297,7 @@ class URL(object):
             netloc = '%s@%s' % (self._userinfo, netloc)
 
         result = urlparse.urlunparse((str(self.scheme), str(netloc),
-            str(self._path), str(self._params), str(self._query),
+            str(self.path), str(self._params), str(self._query),
             self._fragment))
         return result.decode('utf-8').encode(encoding)
 
