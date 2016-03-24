@@ -361,6 +361,7 @@ class URL(object):
     # Get a string representation. These methods can't be chained, as they
     # return strings
     ###########################################################################
+    @property
     def unicode(self):
         '''Return a unicode version of this url'''
         return self.encode('utf-8').decode('utf-8')

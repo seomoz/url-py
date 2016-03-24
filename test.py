@@ -397,7 +397,7 @@ def test_punycode():
             uni)
         # And we get what we'd expect going the opposite direction
         assert_equal(
-            url.parse(puny).unescape().unpunycode().unicode(), uni)
+            url.parse(puny).unescape().unpunycode().unicode, uni)
 
     examples = [
         (u'http://www.kündigen.de/',
