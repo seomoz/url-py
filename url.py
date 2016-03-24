@@ -328,6 +328,7 @@ class URL(object):
     ###########################################################################
     # Information about the domain
     ###########################################################################
+    @property
     def hostname(self):
         '''Return the hostname of the url.'''
         return self.host or ''

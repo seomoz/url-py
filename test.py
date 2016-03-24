@@ -490,7 +490,7 @@ def test_absolute():
 
 def test_hostname():
     def test(query, result):
-        assert_equal(url.parse(query).hostname(), result)
+        assert_equal(url.parse(query).hostname, result)
 
     examples = [
         ('http://foo.com/bar',     'foo.com'),
