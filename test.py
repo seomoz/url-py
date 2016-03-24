@@ -541,3 +541,24 @@ def test_empty_hostname():
     ]
     for example in examples:
         yield test, example
+
+def test_copy():
+    def test(example):
+        original = url.parse(example)
+        copy = original.copy()
+        assert_equal(original, copy)
+        assert_not_equal(id(original), id(copy))
+
+    examples = [
+        'http://testing.com/danny%27s pub',
+        'http://testing.com/this%5Fand%5Fthat',
+        'http://user:pass@foo.com',
+        u'http://José:no way@foo.com',
+        'http://oops!:don%27t@foo.com'
+        u'española,nm%2cusa.html?gunk=junk+glunk&foo=bar baz',
+        'http://foo.com/bar\nbaz.html\n',
+        'http://foo.com/bar.jsp?param=\n/value%2F',
+        'http://user%3apass@foo.com/'
+    ]
+    for example in examples:
+        yield test, example

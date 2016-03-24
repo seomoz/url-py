@@ -111,6 +111,18 @@ class URL(object):
         self.fragment = fragment
         self.userinfo = userinfo
 
+    def copy(self):
+        '''Return a new instance of an identical URL.'''
+        return URL(
+            self.scheme,
+            self.host,
+            self.port,
+            self.path,
+            self.params,
+            self.query,
+            self.fragment,
+            self.userinfo)
+
     def equiv(self, other):
         '''Return true if this url is equivalent to another'''
         if isinstance(other, basestring):
