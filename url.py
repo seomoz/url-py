@@ -116,9 +116,9 @@ class URL(object):
         if isinstance(other, basestring):
             _other = self.parse(other, 'utf-8')
         else:
-            _other = self.parse(other.utf8(), 'utf-8')
+            _other = self.parse(other.utf8, 'utf-8')
 
-        _self = self.parse(self.utf8(), 'utf-8')
+        _self = self.parse(self.utf8, 'utf-8')
         _self.canonical().defrag().abspath().escape().punycode()
         _other.canonical().defrag().abspath().escape().punycode()
 
@@ -159,10 +159,10 @@ class URL(object):
         return not self.__eq__(other)
 
     def __str__(self):
-        return self.utf8()
+        return self.utf8
 
     def __repr__(self):
-        return '<url.URL object "%s" >' % self.utf8()
+        return '<url.URL object "%s" >' % self.utf8
 
     def canonical(self):
         '''Canonicalize this url. This includes reordering parameters and args
@@ -304,10 +304,10 @@ class URL(object):
     def relative(self, path, encoding='utf-8', errors='replace'):
         '''Evaluate the new path relative to the current url'''
         if not isinstance(path, str):
-            newurl = urlparse.urljoin(self.utf8(), path.encode('utf-8', errors))
+            newurl = urlparse.urljoin(self.utf8, path.encode('utf-8', errors))
         else:
             newurl = urlparse.urljoin(
-                self.utf8(), path.decode(encoding, errors).encode('utf-8', errors))
+                self.utf8, path.decode(encoding, errors).encode('utf-8', errors))
         return URL.parse(newurl, 'utf-8')
 
     def punycode(self):
@@ -366,6 +366,7 @@ class URL(object):
         '''Return a unicode version of this url'''
         return self.encode('utf-8').decode('utf-8')
 
+    @property
     def utf8(self):
         '''Return a utf-8 version of this url'''
         return self.encode('utf-8')
