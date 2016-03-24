@@ -475,7 +475,7 @@ def test_remove_default_port():
 
 def test_absolute():
     def test(query, result):
-        assert_equal(url.parse(query).absolute(), result)
+        assert_equal(url.parse(query).absolute, result)
 
     examples = [
         ('http://foo.com/bar', True ),

@@ -351,6 +351,7 @@ class URL(object):
     ###########################################################################
     # Information about the type of url it is
     ###########################################################################
+    @property
     def absolute(self):
         '''Return True if this is a fully-qualified URL with a hostname and
         everything'''
