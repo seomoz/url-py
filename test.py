@@ -516,7 +516,7 @@ def test_pld():
 
 def test_tld():
     def test(query, result):
-        assert_equal(url.parse(query).tld(), result)
+        assert_equal(url.parse(query).tld, result)
 
     examples = [
         ('http://foo.com/bar'    , 'com'),

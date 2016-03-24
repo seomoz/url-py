@@ -341,6 +341,7 @@ class URL(object):
             return psl.get_public_suffix(self.host)
         return ''
 
+    @property
     def tld(self):
         '''Return the top-level domain of a url'''
         if self.host:
