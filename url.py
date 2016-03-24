@@ -333,6 +333,7 @@ class URL(object):
         '''Return the hostname of the url.'''
         return self.host or ''
 
+    @property
     def pld(self):
         '''Return the 'pay-level domain' of the url
             (http://moz.com/blog/what-the-heck-should-we-call-domaincom)'''
@@ -343,7 +344,7 @@ class URL(object):
     def tld(self):
         '''Return the top-level domain of a url'''
         if self.host:
-            return '.'.join(self.pld().split('.')[1:])
+            return '.'.join(self.pld.split('.')[1:])
         return ''
 
     ###########################################################################

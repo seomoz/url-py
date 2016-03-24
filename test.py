@@ -503,7 +503,7 @@ def test_hostname():
 
 def test_pld():
     def test(query, result):
-        assert_equal(url.parse(query).pld(), result)
+        assert_equal(url.parse(query).pld, result)
 
     examples = [
         ('http://foo.com/bar'    , 'foo.com'),
