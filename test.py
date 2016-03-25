@@ -9,7 +9,7 @@ from nose.tools import assert_equal, assert_not_equal, assert_raises
 
 def test_deparam_sane():
     def test(bad, good):
-        assert_equal(url.parse(bad).deparam(['c']).utf8(), good)
+        assert_equal(url.parse(bad).deparam(['c']).utf8, good)
 
     examples = [
         ('?a=1&b=2&c=3&d=4', '?a=1&b=2&d=4'),   # Maintains order
@@ -32,7 +32,7 @@ def test_deparam_sane():
 
 def test_deparam_case_insensitivity():
     def test(bad, good):
-        assert_equal(url.parse(bad).deparam(['HeLlO']).utf8(), good)
+        assert_equal(url.parse(bad).deparam(['HeLlO']).utf8, good)
 
     examples = [
         ('?hELLo=2', ''),
@@ -52,7 +52,7 @@ def test_filter_params():
         return int(value) % 2
 
     def test(bad, good):
-        assert_equal(url.parse(bad).filter_params(function).utf8(), good)
+        assert_equal(url.parse(bad).filter_params(function).utf8, good)
 
     examples = [
         ('?a=1&b=2', '?b=2'),
@@ -67,7 +67,7 @@ def test_filter_params():
 
 def test_lower():
     def test(bad, good):
-        assert_equal(url.parse(bad).utf8(), good)
+        assert_equal(url.parse(bad).utf8, good)
 
     examples = [
         ('www.TESTING.coM'    , 'www.testing.com/'   ),
@@ -82,7 +82,7 @@ def test_lower():
 
 def test_abspath():
     def test(bad, good):
-        assert_equal(url.parse(bad).abspath().utf8(), good)
+        assert_equal(url.parse(bad).abspath().utf8, good)
 
     examples = [
         ('howdy'           , 'howdy'        ),
@@ -115,9 +115,9 @@ def test_abspath():
 
 def test_escape():
     def test(bad, good):
-        assert_equal(url.parse(bad).escape().utf8(), good)
+        assert_equal(url.parse(bad).escape().utf8, good)
         # Escaping should also be idempotent
-        assert_equal(url.parse(bad).escape().escape().utf8(), good)
+        assert_equal(url.parse(bad).escape().escape().utf8, good)
 
     examples = [
         ('hello%20and%20how%20are%20you', 'hello%20and%20how%20are%20you'),
@@ -147,10 +147,10 @@ def test_escape():
 
 def test_strict_escape():
     def test(bad, good):
-        assert_equal(url.parse(bad).escape(strict=True).utf8(), good)
+        assert_equal(url.parse(bad).escape(strict=True).utf8, good)
         # Escaping should also be idempotent
         assert_equal(
-            url.parse(bad).escape(strict=True).escape(strict=True).utf8(), good)
+            url.parse(bad).escape(strict=True).escape(strict=True).utf8, good)
 
     examples = [
         ('http://testing.com/danny%27s pub',
@@ -181,13 +181,13 @@ def test_strict_unicode_escape():
     '''Test Unicode escaping in strict mode'''
     u = url.URL(u'http', u'foo.com', None, u'española,nm%2cusa.html', u'', u'gunk=junk+glunk&foo=bar baz', u'')
     u.escape(strict=True)
-    assert isinstance(u._path, str)
-    assert_equal(u._path, 'espa%C3%B1ola,nm%2Cusa.html')
+    assert isinstance(u.path, str)
+    assert_equal(u.path, 'espa%C3%B1ola,nm%2Cusa.html')
 
 
 def test_userinfo():
     def test(bad, good):
-        assert_equal(url.parse(bad).utf8(), good)
+        assert_equal(url.parse(bad).utf8, good)
 
     examples = [
         ('http://user:pass@foo.com',   'http://user:pass@foo.com'),
@@ -344,7 +344,7 @@ def test_str_repr():
 
 def test_canonical():
     def test(bad, good):
-        assert_equal(url.parse(bad).canonical().utf8(), good)
+        assert_equal(url.parse(bad).canonical().utf8, good)
 
     examples = [
         ('?b=2&a=1&c=3', '?a=1&b=2&c=3'),
@@ -360,7 +360,7 @@ def test_canonical():
 
 def test_defrag():
     def test(bad, good):
-        assert_equal(url.parse(bad).defrag().utf8(), good)
+        assert_equal(url.parse(bad).defrag().utf8, good)
 
     examples = [
         ('foo#bar', 'foo')
@@ -375,7 +375,7 @@ def test_defrag():
 
 def test_deuserinfo():
     def test(bad, good):
-        assert_equal(url.parse(bad).deuserinfo().utf8(), good)
+        assert_equal(url.parse(bad).deuserinfo().utf8, good)
 
     examples = [
         ('http://user:pass@foo.com/', 'http://foo.com/'),
@@ -387,17 +387,17 @@ def test_deuserinfo():
 
 def test_punycode():
     def test(uni, puny):
-        assert_equal(url.parse(uni).escape().punycode().utf8(), puny)
+        assert_equal(url.parse(uni).escape().punycode().utf8, puny)
         # Also make sure punycode is idempotent
         assert_equal(
-            url.parse(uni).escape().punycode().punycode().utf8(), puny)
+            url.parse(uni).escape().punycode().punycode().utf8, puny)
         # Make sure that we can reverse the procedure correctly
         assert_equal(
             url.parse(uni).escape().punycode().unpunycode().unescape(),
             uni)
         # And we get what we'd expect going the opposite direction
         assert_equal(
-            url.parse(puny).unescape().unpunycode().unicode(), uni)
+            url.parse(puny).unescape().unpunycode().unicode, uni)
 
     examples = [
         (u'http://www.kündigen.de/',
@@ -425,7 +425,7 @@ def test_punycode_relative_urls():
 
 def test_relative():
     def test(rel, absolute):
-        assert_equal(base.relative(rel).utf8(), absolute)
+        assert_equal(base.relative(rel).utf8, absolute)
 
     base = url.parse('http://testing.com/a/b/c')
     examples = [
@@ -446,7 +446,7 @@ def test_relative():
 
 def test_sanitize():
     def test(bad, good):
-        assert_equal(url.parse(bad).sanitize().utf8(), good)
+        assert_equal(url.parse(bad).sanitize().utf8, good)
 
     examples = [
         ('../foo/bar none', 'foo/bar%20none')
@@ -461,7 +461,7 @@ def test_sanitize():
 
 def test_remove_default_port():
     def test(query, result):
-        assert_equal(url.parse(query).remove_default_port().utf8(), result)
+        assert_equal(url.parse(query).remove_default_port().utf8, result)
 
     examples = [
         ('http://foo.com:80/'  , 'http://foo.com/'     ),
@@ -475,7 +475,7 @@ def test_remove_default_port():
 
 def test_absolute():
     def test(query, result):
-        assert_equal(url.parse(query).absolute(), result)
+        assert_equal(url.parse(query).absolute, result)
 
     examples = [
         ('http://foo.com/bar', True ),
@@ -490,7 +490,7 @@ def test_absolute():
 
 def test_hostname():
     def test(query, result):
-        assert_equal(url.parse(query).hostname(), result)
+        assert_equal(url.parse(query).hostname, result)
 
     examples = [
         ('http://foo.com/bar',     'foo.com'),
@@ -503,7 +503,7 @@ def test_hostname():
 
 def test_pld():
     def test(query, result):
-        assert_equal(url.parse(query).pld(), result)
+        assert_equal(url.parse(query).pld, result)
 
     examples = [
         ('http://foo.com/bar'    , 'foo.com'),
@@ -516,7 +516,7 @@ def test_pld():
 
 def test_tld():
     def test(query, result):
-        assert_equal(url.parse(query).tld(), result)
+        assert_equal(url.parse(query).tld, result)
 
     examples = [
         ('http://foo.com/bar'    , 'com'),
@@ -532,12 +532,33 @@ def test_empty_hostname():
         # Equal to itself
         assert_equal(url.parse(example), example)
         # String representation equal to the provided example
-        assert_equal(url.parse(example).utf8(), example)
+        assert_equal(url.parse(example).utf8, example)
 
     examples = [
         'http:///path',
         'http://userinfo@/path',
         'http://:80/path',
+    ]
+    for example in examples:
+        yield test, example
+
+def test_copy():
+    def test(example):
+        original = url.parse(example)
+        copy = original.copy()
+        assert_equal(original, copy)
+        assert_not_equal(id(original), id(copy))
+
+    examples = [
+        'http://testing.com/danny%27s pub',
+        'http://testing.com/this%5Fand%5Fthat',
+        'http://user:pass@foo.com',
+        u'http://José:no way@foo.com',
+        'http://oops!:don%27t@foo.com'
+        u'española,nm%2cusa.html?gunk=junk+glunk&foo=bar baz',
+        'http://foo.com/bar\nbaz.html\n',
+        'http://foo.com/bar.jsp?param=\n/value%2F',
+        'http://user%3apass@foo.com/'
     ]
     for example in examples:
         yield test, example

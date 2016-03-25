@@ -99,45 +99,57 @@ class URL(object):
             parsed.path, parsed.params, parsed.query, parsed.fragment, userinfo)
 
     def __init__(self, scheme, host, port, path, params, query, fragment, userinfo=None):
-        self._scheme = scheme
-        self._host = host
-        self._port = port
-        self._path = path or '/'
-        self._params = re.sub(r'^;+', '', str(params))
-        self._params = re.sub(r'^;|;$', '', re.sub(r';{2,}', ';', self._params))
+        self.scheme = scheme
+        self.host = host
+        self.port = port
+        self.path = path or '/'
+        self.params = re.sub(r'^;+', '', str(params))
+        self.params = re.sub(r'^;|;$', '', re.sub(r';{2,}', ';', self.params))
         # Strip off extra leading ?'s
-        self._query = re.sub(r'^\?+', '', str(query))
-        self._query = re.sub(r'^&|&$', '', re.sub(r'&{2,}', '&', self._query))
-        self._fragment = fragment
-        self._userinfo = userinfo
+        self.query = re.sub(r'^\?+', '', str(query))
+        self.query = re.sub(r'^&|&$', '', re.sub(r'&{2,}', '&', self.query))
+        self.fragment = fragment
+        self.userinfo = userinfo
+
+    def copy(self):
+        '''Return a new instance of an identical URL.'''
+        return URL(
+            self.scheme,
+            self.host,
+            self.port,
+            self.path,
+            self.params,
+            self.query,
+            self.fragment,
+            self.userinfo)
 
     def equiv(self, other):
         '''Return true if this url is equivalent to another'''
         if isinstance(other, basestring):
             _other = self.parse(other, 'utf-8')
         else:
-            _other = self.parse(other.utf8(), 'utf-8')
+            _other = self.parse(other.utf8, 'utf-8')
 
-        _self = self.parse(self.utf8(), 'utf-8')
+        _self = self.parse(self.utf8, 'utf-8')
         _self.canonical().defrag().abspath().escape().punycode()
         _other.canonical().defrag().abspath().escape().punycode()
 
         result = (
-            _self._scheme   == _other._scheme   and
-            _self._host     == _other._host     and
-            _self._path     == _other._path     and
-            _self._params   == _other._params   and
-            _self._query    == _other._query)
+            _self.scheme    == _other.scheme    and
+            _self.host      == _other.host      and
+            _self.path      == _other.path      and
+            _self.params    == _other.params    and
+            _self.query     == _other.query)
 
         if result:
-            if _self._port and not _other._port:
-                # Make sure _self._port is the default for the scheme
-                return _self._port == PORTS.get(_self._scheme, None)
-            elif _other._port and not _self._port:
-                # Make sure _other._port is the default for the scheme
-                return _other._port == PORTS.get(_other._scheme, None)
+            if _self.port and not _other.port:
+                # Make sure _self.port is the default for the scheme
+                return _self.port == PORTS.get(_self.scheme, None)
+            elif _other.port and not _self.port:
+                # Make sure _other.port is the default for the scheme
+                return _other.port == PORTS.get(_other.scheme, None)
             else:
-                return _self._port == _other._port
+                return _self.port == _other.port
         else:
             return False
 
@@ -146,34 +158,34 @@ class URL(object):
         if isinstance(other, basestring):
             return self.__eq__(self.parse(other, 'utf-8'))
         return (
-            self._scheme   == other._scheme   and
-            self._host     == other._host     and
-            self._path     == other._path     and
-            self._port     == other._port     and
-            self._params   == other._params   and
-            self._query    == other._query    and
-            self._fragment == other._fragment and
-            self._userinfo == other._userinfo)
+            self.scheme    == other.scheme    and
+            self.host      == other.host      and
+            self.path      == other.path      and
+            self.port      == other.port      and
+            self.params    == other.params    and
+            self.query     == other.query     and
+            self.fragment  == other.fragment  and
+            self.userinfo  == other.userinfo)
 
     def __ne__(self, other):
         return not self.__eq__(other)
 
     def __str__(self):
-        return self.utf8()
+        return self.utf8
 
     def __repr__(self):
-        return '<url.URL object "%s" >' % self.utf8()
+        return '<url.URL object "%s" >' % self.utf8
 
     def canonical(self):
         '''Canonicalize this url. This includes reordering parameters and args
         to have a consistent ordering'''
-        self._query = '&'.join(sorted([q for q in self._query.split('&')]))
-        self._params = ';'.join(sorted([q for q in self._params.split(';')]))
+        self.query = '&'.join(sorted([q for q in self.query.split('&')]))
+        self.params = ';'.join(sorted([q for q in self.params.split(';')]))
         return self
 
     def defrag(self):
         '''Remove the fragment from this url'''
-        self._fragment = None
+        self.fragment = None
         return self
 
     def deparam(self, params):
@@ -188,19 +200,19 @@ class URL(object):
         def keep(query):
             name, _, value = query.partition('=')
             return not function(name, value)
-        self._query = '&'.join(q for q in self._query.split('&') if q and keep(q))
-        self._params = ';'.join(q for q in self._params.split(';') if q and keep(q))
+        self.query = '&'.join(q for q in self.query.split('&') if q and keep(q))
+        self.params = ';'.join(q for q in self.params.split(';') if q and keep(q))
         return self
 
     def deuserinfo(self):
         '''Remove any userinfo'''
-        self._userinfo = None
+        self.userinfo = None
         return self
 
     def abspath(self):
         '''Clear out any '..' and excessive slashes from the path'''
         # Remove double forward-slashes from the path
-        path = re.sub(r'\/{2,}', '/', self._path)
+        path = re.sub(r'\/{2,}', '/', self.path)
         # With that done, go through and remove all the relative references
         unsplit = []
         directory = False
@@ -219,9 +231,9 @@ class URL(object):
         if directory:
             # If the path ends with a period, then it refers to a directory,
             # not a file path
-            self._path = '/'.join(unsplit) + '/'
+            self.path = '/'.join(unsplit) + '/'
         else:
-            self._path = '/'.join(unsplit)
+            self.path = '/'.join(unsplit)
         return self
 
     def sanitize(self):
@@ -230,8 +242,8 @@ class URL(object):
 
     def remove_default_port(self):
         '''If a port is provided an is the default, remove it.'''
-        if self._port and self._scheme and (self._port == PORTS[self._scheme]):
-            self._port = None
+        if self.port and self.scheme and (self.port == PORTS[self.scheme]):
+            self.port = None
         return self
 
     @staticmethod
@@ -258,109 +270,115 @@ class URL(object):
     def escape(self, strict=False):
         '''Make sure that the path is correctly escaped'''
         if strict:
-            self._path = self.percent_encode(self._path, URL.PATH)
-            self._query = self.percent_encode(self._query, URL.QUERY)
-            self._params = self.percent_encode(self._params, URL.QUERY)
-            if self._userinfo:
-                self._userinfo = self.percent_encode(self._userinfo, URL.USERINFO)
+            self.path = self.percent_encode(self.path, URL.PATH)
+            self.query = self.percent_encode(self.query, URL.QUERY)
+            self.params = self.percent_encode(self.params, URL.QUERY)
+            if self.userinfo:
+                self.userinfo = self.percent_encode(self.userinfo, URL.USERINFO)
             return self
         else:
-            self._path = urllib.quote(
-                urllib.unquote(self._path), safe=URL.PATH)
+            self.path = urllib.quote(
+                urllib.unquote(self.path), safe=URL.PATH)
             # Safe characters taken from:
             #    http://tools.ietf.org/html/rfc3986#page-50
-            self._query = urllib.quote(urllib.unquote(self._query),
+            self.query = urllib.quote(urllib.unquote(self.query),
                 safe=URL.QUERY)
             # The safe characters for URL parameters seemed a little more vague.
             # They are interpreted here as *pchar despite this page, since the
             # updated RFC seems to offer no replacement
             #    http://tools.ietf.org/html/rfc3986#page-54
-            self._params = urllib.quote(urllib.unquote(self._params),
+            self.params = urllib.quote(urllib.unquote(self.params),
                 safe=URL.QUERY)
-            if self._userinfo:
-                self._userinfo = urllib.quote(urllib.unquote(self._userinfo),
+            if self.userinfo:
+                self.userinfo = urllib.quote(urllib.unquote(self.userinfo),
                     safe=URL.USERINFO)
             return self
 
     def unescape(self):
         '''Unescape the path'''
-        self._path = urllib.unquote(self._path)
+        self.path = urllib.unquote(self.path)
         return self
 
     def encode(self, encoding):
         '''Return the url in an arbitrary encoding'''
-        netloc = self._host or ''
-        if self._port:
-            netloc += (':' + str(self._port))
+        netloc = self.host or ''
+        if self.port:
+            netloc += (':' + str(self.port))
 
-        if self._userinfo is not None:
-            netloc = '%s@%s' % (self._userinfo, netloc)
+        if self.userinfo is not None:
+            netloc = '%s@%s' % (self.userinfo, netloc)
 
-        result = urlparse.urlunparse((str(self._scheme), str(netloc),
-            str(self._path), str(self._params), str(self._query),
-            self._fragment))
+        result = urlparse.urlunparse((str(self.scheme), str(netloc),
+            str(self.path), str(self.params), str(self.query),
+            self.fragment))
         return result.decode('utf-8').encode(encoding)
 
     def relative(self, path, encoding='utf-8', errors='replace'):
         '''Evaluate the new path relative to the current url'''
         if not isinstance(path, str):
-            newurl = urlparse.urljoin(self.utf8(), path.encode('utf-8', errors))
+            newurl = urlparse.urljoin(self.utf8, path.encode('utf-8', errors))
         else:
             newurl = urlparse.urljoin(
-                self.utf8(), path.decode(encoding, errors).encode('utf-8', errors))
+                self.utf8, path.decode(encoding, errors).encode('utf-8', errors))
         return URL.parse(newurl, 'utf-8')
 
     def punycode(self):
         '''Convert to punycode hostname'''
-        if self._host:
-            self._host = IDNA.encode(self._host.decode('utf-8'))[0]
+        if self.host:
+            self.host = IDNA.encode(self.host.decode('utf-8'))[0]
             return self
         raise TypeError('Cannot punycode a relative url (%s)' % repr(self))
 
     def unpunycode(self):
         '''Convert to an unpunycoded hostname'''
-        if self._host:
-            self._host = IDNA.decode(
-                self._host.decode('utf-8'))[0].encode('utf-8')
+        if self.host:
+            self.host = IDNA.decode(
+                self.host.decode('utf-8'))[0].encode('utf-8')
             return self
         raise TypeError('Cannot unpunycode a relative url (%s)' % repr(self))
 
     ###########################################################################
     # Information about the domain
     ###########################################################################
+    @property
     def hostname(self):
         '''Return the hostname of the url.'''
-        return self._host or ''
+        return self.host or ''
 
+    @property
     def pld(self):
         '''Return the 'pay-level domain' of the url
             (http://moz.com/blog/what-the-heck-should-we-call-domaincom)'''
-        if self._host:
-            return psl.get_public_suffix(self._host)
+        if self.host:
+            return psl.get_public_suffix(self.host)
         return ''
 
+    @property
     def tld(self):
         '''Return the top-level domain of a url'''
-        if self._host:
-            return '.'.join(self.pld().split('.')[1:])
+        if self.host:
+            return '.'.join(self.pld.split('.')[1:])
         return ''
 
     ###########################################################################
     # Information about the type of url it is
     ###########################################################################
+    @property
     def absolute(self):
         '''Return True if this is a fully-qualified URL with a hostname and
         everything'''
-        return bool(self._host)
+        return bool(self.host)
 
     ###########################################################################
     # Get a string representation. These methods can't be chained, as they
     # return strings
     ###########################################################################
+    @property
     def unicode(self):
         '''Return a unicode version of this url'''
         return self.encode('utf-8').decode('utf-8')
 
+    @property
     def utf8(self):
         '''Return a utf-8 version of this url'''
         return self.encode('utf-8')

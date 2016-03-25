@@ -165,14 +165,31 @@ to be able to display something nicer than `http://xn--mlaut-jva.com/`:
     >>> print url.parse('http://xn--mlaut-jva.com/').unpunycode().utf8()
     http://ümlaut.com/
 
-String Result
-=============
-Once you've done all the manipulation you're planning to do, you probably want
-a string out of it at the end:
+Other Functions
+===============
+Not all functions are chainable -- some return a value other than a `URL` object:
 
-- `unicode()` -- return a unicode version of the url
-- `utf8()` -- return a utf-8 verison of the url
 - `encode(...)` -- return a version of the url in an arbitrary encoding
+
+Properties
+==========
+Many attributes are available on URL objects:
+
+- `scheme` -- empty string if URL is relative
+- `host` -- `None` if URL is relative
+- `hostname` -- like `host`, but empty string if URL is relative
+- `pld` -- the [pay-level domain](https://moz.com/blog/what-the-heck-should-we-call-domaincom),
+    or an empty string if URL is relative
+- `tld` -- the [top-level domain](https://en.wikipedia.org/wiki/Top-level_domain),
+    or an empty string if URL is relative
+- `port` -- `None` if absent (or removed)
+- `path` -- always with a leading `/`
+- `params` -- string of params following the `;` (with extra `;`'s removed)
+- `query` -- string of queries following the `?` (with extra `?`'s and `&`'s removed)
+- `fragment` -- empty string if absent
+- `absolute` -- a `bool` indicating whether the URL is absolute
+- `unicode` -- a unicode version of the URL
+- `utf8` -- a utf-8 verison of the URL
 
 Contentious Issues
 ==================
