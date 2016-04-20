@@ -509,10 +509,10 @@ def test_pld():
         ('http://foo.com/bar'    , 'foo.com'),
         ('http://bar.foo.com/bar', 'foo.com'),
         ('/foo'                  , ''),
-        ('http://foo.ею'         , 'foo.ею'),
-        ('http://bar.foo.ею'     , 'foo.ею'),
-        ('http://foo.xn--e1a4c'  , 'foo.xn--e1a4c'),
-        ('http://bar.foo.xn--e1a4c', 'foo.xn--e1a4c')
+        (u'http://foo.გე'        , u'foo.გე'),
+        (u'http://bar.foo.გე'    , u'foo.გე'),
+        ('http://foo.xn--node'   , 'foo.xn--node'),
+        ('http://bar.foo.xn--node', 'foo.xn--node'),
     ]
     for query, result in examples:
         yield test, query, result
