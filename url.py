@@ -98,6 +98,17 @@ class URL(object):
         return cls(parsed.scheme, parsed.hostname, port,
             parsed.path, parsed.params, parsed.query, parsed.fragment, userinfo)
 
+    __slots__ = (
+        'scheme',
+        'host',
+        'port',
+        'path',
+        'params',
+        'query',
+        'fragment',
+        'userinfo'
+    )
+
     def __init__(self, scheme, host, port, path, params, query, fragment, userinfo=None):
         self.scheme = scheme
         self.host = host
