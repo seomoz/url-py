@@ -109,16 +109,21 @@ class URL(object):
         'userinfo'
     )
 
+    LEADING_TRAILING_SEMICOLONS = re.compile(r'^;+|;+$')
+    MULTIPLE_SEMICOLONS = re.compile(r';{2,}')
+    LEADING_TRAILING_QUERY_MARKS = re.compile(r'^\?+|^&+|&+$')
+    MULTIPLE_AMPERSANDS = re.compile(r'&{2,}')
+
     def __init__(self, scheme, host, port, path, params, query, fragment, userinfo=None):
         self.scheme = scheme
         self.host = host
         self.port = port
         self.path = path or '/'
-        self.params = re.sub(r'^;+', '', str(params))
-        self.params = re.sub(r'^;|;$', '', re.sub(r';{2,}', ';', self.params))
+        self.params = self.MULTIPLE_SEMICOLONS.sub(';', str(params))
+        self.params = self.LEADING_TRAILING_SEMICOLONS.sub('', self.params)
         # Strip off extra leading ?'s
-        self.query = re.sub(r'^\?+', '', str(query))
-        self.query = re.sub(r'^&|&$', '', re.sub(r'&{2,}', '&', self.query))
+        self.query = self.LEADING_TRAILING_QUERY_MARKS.sub('', str(query))
+        self.query = self.MULTIPLE_AMPERSANDS.sub('&', self.query)
         self.fragment = fragment
         self.userinfo = userinfo
 
