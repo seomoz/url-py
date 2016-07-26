@@ -36,7 +36,6 @@ cleaning parameter and query strings, and a little more sanitization.
 	author           = 'Dan Lecocq',
 	author_email     = 'dan@moz.com',
 	url              = 'http://github.com/seomoz/url-py',
-	py_modules       = ['url'],
 	license          = 'MIT',
 	platforms        = 'Posix; MacOS X',
 	classifiers      = [
@@ -45,6 +44,12 @@ cleaning parameter and query strings, and a little more sanitization.
 		'Environment :: Web Environment',
 		'Intended Audience :: Developers',
 		'Topic :: Internet :: WWW/HTTP'],
+	packages         = [
+		'url'
+	],
+	package_dir      = {
+		'url': 'url'
+	},
 	install_requires = [
 		'publicsuffix'
 	],
