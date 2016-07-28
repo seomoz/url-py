@@ -22,39 +22,67 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 from distutils.core import setup
+from distutils.extension import Extension
+
+ext_files = [
+    'url/url-cpp/src/url.cpp',
+    'url/url-cpp/src/utf8.cpp',
+    'url/url-cpp/src/punycode.cpp'
+]
+
+kwargs = {}
+
+try:
+    from Cython.Distutils import build_ext
+    print('Building from Cython')
+    ext_files.append('url/url.pyx')
+    kwargs['cmdclass'] = {'build_ext': build_ext}
+except ImportError:
+    print('Building from C++')
+    ext_files.append('url/url.cpp')
+
+ext_modules = [
+    Extension('url.url', ext_files,
+        language='c++',
+        extra_compile_args=['-std=c++11'],
+        include_dirs=['url/url-cpp/include'])
+]
 
 setup(
-	name             = 'url',
-	version          = '0.2.0',
-	description      = 'URL Parsing',
-	long_description = '''
+    name             = 'url',
+    version          = '0.2.0',
+    description      = 'URL Parsing',
+    long_description = '''
 Some helper functions for parsing URLs, sanitizing them, normalizing them.
 
 This includes support for escaping, unescaping, punycoding, unpunycoding,
 cleaning parameter and query strings, and a little more sanitization.
 ''',
-	author           = 'Dan Lecocq',
-	author_email     = 'dan@moz.com',
-	url              = 'http://github.com/seomoz/url-py',
-	license          = 'MIT',
-	platforms        = 'Posix; MacOS X',
-	classifiers      = [
-		'License :: OSI Approved :: MIT License',
-		'Development Status :: 3 - Alpha',
-		'Environment :: Web Environment',
-		'Intended Audience :: Developers',
-		'Topic :: Internet :: WWW/HTTP'],
-	packages         = [
-		'url'
-	],
-	package_dir      = {
-		'url': 'url'
-	},
-	install_requires = [
-		'publicsuffix'
-	],
-	tests_require = [
-		'coverage',
-		'nose',
-	]
+    author           = 'Dan Lecocq',
+    author_email     = 'dan@moz.com',
+    url              = 'http://github.com/seomoz/url-py',
+    license          = 'MIT',
+    platforms        = 'Posix; MacOS X',
+    classifiers      = [
+        'License :: OSI Approved :: MIT License',
+        'Development Status :: 3 - Alpha',
+        'Environment :: Web Environment',
+        'Intended Audience :: Developers',
+        'Topic :: Internet :: WWW/HTTP'
+    ],
+    ext_modules      = ext_modules,
+    packages         = [
+        'url'
+    ],
+    package_dir      = {
+        'url': 'url'
+    },
+    install_requires = [
+        'publicsuffix'
+    ],
+    tests_require    = [
+        'coverage',
+        'nose'
+    ],
+    **kwargs
 )
