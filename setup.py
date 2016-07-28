@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2012-2013 SEOmoz, Inc.
+# Copyright (c) 2012-2016 SEOmoz, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -21,10 +21,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-try:
-	from setuptools import setup
-except ImportError:
-	from distutils.core import setup
+from distutils.core import setup
 
 setup(
 	name             = 'url',
@@ -37,12 +34,11 @@ This includes support for escaping, unescaping, punycoding, unpunycoding,
 cleaning parameter and query strings, and a little more sanitization.
 ''',
 	author           = 'Dan Lecocq',
-	author_email     = 'dan@seomoz.org',
+	author_email     = 'dan@moz.com',
 	url              = 'http://github.com/seomoz/url-py',
 	py_modules       = ['url'],
 	license          = 'MIT',
 	platforms        = 'Posix; MacOS X',
-	test_suite       = 'tests.testReppy',
 	classifiers      = [
 		'License :: OSI Approved :: MIT License',
 		'Development Status :: 3 - Alpha',
