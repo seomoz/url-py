@@ -508,7 +508,11 @@ def test_pld():
     examples = [
         ('http://foo.com/bar'    , 'foo.com'),
         ('http://bar.foo.com/bar', 'foo.com'),
-        ('/foo'                  , '')
+        ('/foo'                  , ''),
+        (u'http://foo.გე'        , u'foo.გე'),
+        (u'http://bar.foo.გე'    , u'foo.გე'),
+        ('http://foo.xn--node'   , 'foo.xn--node'),
+        ('http://bar.foo.xn--node', 'foo.xn--node'),
     ]
     for query, result in examples:
         yield test, query, result

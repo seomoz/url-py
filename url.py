@@ -350,7 +350,12 @@ class URL(object):
         '''Return the 'pay-level domain' of the url
             (http://moz.com/blog/what-the-heck-should-we-call-domaincom)'''
         if self.host:
-            return psl.get_public_suffix(self.host)
+            if not 'xn--' in self.host:
+                return psl.get_public_suffix(self.host.decode('utf-8'))
+            unpunyhost = IDNA.decode(self.host)[0]
+            tld = psl.get_public_suffix(unpunyhost)
+            return IDNA.encode(tld)[0]
+
         return ''
 
     @property
