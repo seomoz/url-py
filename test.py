@@ -454,6 +454,20 @@ def test_punycode_encode_errors():
         yield test, example
 
 
+def test_segment_lengths():
+    def test(example):
+        assert_raises(ValueError, url.parse(example).punycode)
+
+    examples = [
+        'http://foo..com/',
+        'http://foo../',
+        'http://this-is-a-very-long-segment-that-has-more-than-sixty-three-characters.com/',
+        'http://this-is-a-very-long-segment-that-has-more-than-sixty-three-characters/'
+    ]
+
+    for example in examples:
+        yield test, example
+
 def test_punycode_decode_errors():
     def test(example):
         assert_raises(ValueError, url.parse('http://xn--' + example).unpunycode)
