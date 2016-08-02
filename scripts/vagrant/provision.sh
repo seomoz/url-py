@@ -23,6 +23,9 @@ hash
 
 pushd /vagrant
 
+    # Submodules
+    git submodule update --init --recursive
+
     # Install our python version
     pyenv install
     pyenv rehash

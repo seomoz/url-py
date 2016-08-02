@@ -7,6 +7,20 @@ import unittest
 from nose.tools import assert_equal, assert_not_equal, assert_raises
 
 
+def test_bad_port():
+    def test(example):
+        assert_raises(ValueError, url.parse, example)
+
+    examples = [
+        'http://www.python.org:65536/',
+        'http://www.python.org:-20/',
+        'http://www.python.org:8589934592/',
+        'http://www.python.org:80hello/'
+    ]
+    for example in examples:
+        yield test, example
+
+
 def test_deparam_sane():
     def test(bad, good):
         assert_equal(url.parse(bad).deparam(['c']).utf8, good)
@@ -175,14 +189,6 @@ def test_strict_escape():
 
     for bad, good in examples:
         yield test, bad, good
-
-
-def test_strict_unicode_escape():
-    '''Test Unicode escaping in strict mode'''
-    u = url.URL(u'http', u'foo.com', None, u'española,nm%2cusa.html', u'', u'gunk=junk+glunk&foo=bar baz', u'')
-    u.escape(strict=True)
-    assert isinstance(u.path, str)
-    assert_equal(u.path, 'espa%C3%B1ola,nm%2Cusa.html')
 
 
 def test_userinfo():
@@ -404,6 +410,8 @@ def test_punycode():
             'http://www.xn--kndigen-n2a.de/'),
         (u'http://россия.иком.museum/',
             'http://xn--h1alffa9f.xn--h1aegh.museum/'),
+        (u'https://t…/',
+            'https://xn--t-9hn/'),
         (u'http://россия.иком.museum/испытание.html',
             'http://xn--h1alffa9f.xn--h1aegh.museum/%D0%B8%D1%81%D0%BF%D1%8B%D1%82%D0%B0%D0%BD%D0%B8%D0%B5.html')
     ]
@@ -413,14 +421,53 @@ def test_punycode():
 
 
 def test_punycode_relative_urls():
-    def test(relative):
-        assert_raises(TypeError, url.parse(relative).punycode)
-        assert_raises(TypeError, url.parse(relative).unpunycode)
+    def test(example):
+        assert_equal(url.parse(example).escape().punycode().utf8, example)
+        # Also make sure punycode is idempotent
+        assert_equal(
+            url.parse(example).escape().punycode().punycode().utf8, example)
+        # Make sure that we can reverse the procedure correctly
+        assert_equal(
+            url.parse(example).escape().punycode().unpunycode().unescape(),
+            example)
+        # And we get what we'd expect going the opposite direction
+        assert_equal(
+            url.parse(example).unescape().unpunycode().unicode, example)
 
     # Make sure that we can't punycode or unpunycode relative urls
     examples = ['foo', '../foo', '/bar/foo']
     for relative in examples:
         yield test, relative
+
+
+def test_punycode_encode_errors():
+    def test(example):
+        assert_raises(ValueError, url.parse('http://' + example).punycode)
+
+    # Taken from url-cpp
+    examples = [
+        (('a' * 3855) + '\xF4\x8F\xBF\xBF'),
+        (('a' * 8190) + '\xC2\x80\xF2\x80\x82\x80')
+    ]
+
+    for example in examples:
+        yield test, example
+
+
+def test_punycode_decode_errors():
+    def test(example):
+        assert_raises(ValueError, url.parse('http://xn--' + example).unpunycode)
+
+    # Taken from url-cpp
+    examples = [
+        'd9juau41awczcz',
+        '\xc3\xbc-',
+        's121kz41webp2qdk6492joxumu36',
+        '999999b'
+    ]
+
+    for example in examples:
+        yield test, example
 
 
 def test_relative():
@@ -436,6 +483,7 @@ def test_relative():
         ('http://foo.com/bar', 'http://foo.com/bar'                ),
         (u'/foo'             , 'http://testing.com/foo'            ),
         (u'/\u200Bfoo'       , 'http://testing.com/\xe2\x80\x8bfoo'),
+        ('../../../../'      , 'http://testing.com/'               ),
         (u'http://www\u200B.tiagopriscostudio.com',
             'http://www\xe2\x80\x8b.tiagopriscostudio.com/')
     ]

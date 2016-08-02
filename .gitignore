@@ -5,3 +5,4 @@ url.egg-info/
 .coverage
 venv
 .vagrant
+*.so
