@@ -506,6 +506,12 @@ def test_relative():
         yield test, rel, absolute
 
 
+def test_relative_javascript():
+    rel = 'javascript:console.log("hello")'
+    base = 'http://foo.com/path'
+    assert_equal(rel, url.parse(rel).relative_to(base).utf8)
+
+
 def test_sanitize():
     def test(bad, good):
         assert_equal(url.parse(bad).sanitize().utf8, good)
