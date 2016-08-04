@@ -3,7 +3,7 @@ test: url/url.so
 	# TODO(dan): coverage with Cython
 	nosetests --verbose
 
-url/url.so: url/url.cpp url/url.pyx url/url.pxd
+url/url.so: url/url.cpp url/url.pyx url/url.pxd url/url-cpp/src/*.cpp url/url-cpp/include/*.h
 	python setup.py build_ext --inplace
 
 install:
