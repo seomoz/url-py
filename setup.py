@@ -27,7 +27,8 @@ from distutils.extension import Extension
 ext_files = [
     'url/url-cpp/src/url.cpp',
     'url/url-cpp/src/utf8.cpp',
-    'url/url-cpp/src/punycode.cpp'
+    'url/url-cpp/src/punycode.cpp',
+    'url/url-cpp/src/psl.cpp'
 ]
 
 kwargs = {}
@@ -50,7 +51,7 @@ ext_modules = [
 
 setup(
     name             = 'url',
-    version          = '0.3.0rc1',
+    version          = '0.3.0rc2',
     description      = 'URL Parsing',
     long_description = '''
 Some helper functions for parsing URLs, sanitizing them, normalizing them.
@@ -77,9 +78,9 @@ cleaning parameter and query strings, and a little more sanitization.
     package_dir      = {
         'url': 'url'
     },
-    install_requires = [
-        'publicsuffix'
-    ],
+    package_data     = {
+        'url': ['psl/*']
+    },
     tests_require    = [
         'coverage',
         'nose'

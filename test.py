@@ -574,9 +574,15 @@ def test_pld():
         assert_equal(url.parse(query).pld, result)
 
     examples = [
-        ('http://foo.com/bar'    , 'foo.com'),
-        ('http://bar.foo.com/bar', 'foo.com'),
-        ('/foo'                  , '')
+        ('http://foo.com/bar'     , 'foo.com'),
+        ('http://bar.foo.com/bar' , 'foo.com'),
+        ('/foo'                   , ''),
+        ('http://com/bar'         , ''),
+        ('http://foo.გე'          , 'foo.გე'),
+        ('http://bar.foo.გე'      , 'foo.გე'),
+        ('http://foo.xn--node'    , 'foo.xn--node'),
+        ('http://bar.foo.xn--node', 'foo.xn--node'),
+        ('http://foo.co.uk'       , 'foo.co.uk')
     ]
     for query, result in examples:
         yield test, query, result
@@ -589,7 +595,13 @@ def test_tld():
     examples = [
         ('http://foo.com/bar'    , 'com'),
         ('http://bar.foo.com/bar', 'com'),
-        ('/foo'                  , '')
+        ('/foo'                  , ''),
+        ('http://com/bar'        , 'com'),
+        ('http://foo.გე'          , 'გე'),
+        ('http://bar.foo.გე'      , 'გე'),
+        ('http://foo.xn--node'    , 'xn--node'),
+        ('http://bar.foo.xn--node', 'xn--node'),
+        ('http://foo.co.uk'       , 'co.uk')
     ]
     for query, result in examples:
         yield test, query, result
