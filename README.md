@@ -171,6 +171,24 @@ Not all functions are chainable -- some return a value other than a `URL` object
 
 - `encode(...)` -- return a version of the url in an arbitrary encoding
 
+Public Suffix List
+==================
+This library comes bundled with a version of the public suffix list. However, it may not
+suit your needs (whether you need to stay pinned to an old list, or need to update to a
+new list). As such, you can provide the PSL you'd like to use, as a `UTF-8` string:
+
+```python
+import url
+
+# Read it from a file
+with open('path/to/my/psl') as fin:
+    url.set_psl(fin.read())
+
+# Grab it from the PSL site
+import requests
+url.set_psl(requests.get('https://publicsuffix.org/list/public_suffix_list.dat').content)
+```
+
 Properties
 ==========
 Many attributes are available on URL objects:

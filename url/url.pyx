@@ -2,9 +2,9 @@
 # distutils: define_macros=CYTHON_TRACE=1
 
 from cython.operator import dereference
+import pkgutil
 
-from publicsuffix import PublicSuffixList
-psl = PublicSuffixList()
+cdef PSL psl = PSL.fromString(pkgutil.get_data('url', 'psl/2016-08-16.psl'))
 
 def ParseMethod(cls, s, encoding='utf-8'):
     if isinstance(s, bytes):
@@ -14,6 +14,10 @@ def ParseMethod(cls, s, encoding='utf-8'):
             return cls(s.decode(encoding).encode('utf-8'))
     else:
         return cls(s.encode('utf-8'))
+
+def set_psl(rules):
+    global psl
+    psl = PSL.fromString(rules)
 
 
 cdef class URL:
@@ -208,14 +212,14 @@ cdef class URL:
             (http://moz.com/blog/what-the-heck-should-we-call-domaincom)'''
         def __get__(self):
             if not self.ptr.host().empty():
-                return psl.get_public_suffix(self.ptr.host())
+                return psl.getPLD(self.ptr.host())
             return ''
 
     property tld:
         '''Return the top-level domain of a url'''
         def __get__(self):
             if not self.ptr.host().empty():
-                return '.'.join(self.pld.split('.')[1:])
+                return psl.getTLD(self.ptr.host())
             return ''
 
     property absolute:

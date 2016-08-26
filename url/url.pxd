@@ -6,6 +6,17 @@ from libcpp.string cimport string
 from libcpp.unordered_set cimport unordered_set
 from libcpp cimport bool
 
+cdef extern from "url-cpp/include/psl.h" namespace "Url":
+    cpdef cppclass PSL:
+        PSL& operator=(const PSL& other)
+        @staticmethod
+        PSL fromPath(const string& path)
+        @staticmethod
+        PSL fromString(const string& str)
+        string getTLD(const string& hostname) const
+        string getPLD(const string& hostname) const
+
+
 cdef extern from "url-cpp/include/url.h" namespace "Url":
     cpdef cppclass Url:
         Url(const string& url) except +ValueError
@@ -49,3 +60,16 @@ cdef extern from "url-cpp/include/url.h" namespace "Url":
         Url& defrag()
         Url& punycode() except +ValueError
         Url& unpunycode() except +ValueError
+
+
+cdef extern from "url-cpp/include/psl.h" namespace "Url":
+    cpdef cppclass PSL:
+        PSL()
+        PSL(const PSL& other)
+        PSL& operator=(const PSL& other)
+        @staticmethod
+        PSL fromPath(const string& path)
+        @staticmethod
+        PSL fromString(const string& path)
+        string getTLD(const string& host) except +ValueError
+        string getPLD(const string& host) except +ValueError
