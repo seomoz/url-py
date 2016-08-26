@@ -4,6 +4,8 @@
 from cython.operator import dereference
 import pkgutil
 
+cdef PSL psl = PSL.fromString(pkgutil.get_data('url', 'psl/2016-08-16.psl'))
+
 def ParseMethod(cls, s, encoding='utf-8'):
     if isinstance(s, bytes):
         if encoding == 'utf-8':
@@ -13,9 +15,9 @@ def ParseMethod(cls, s, encoding='utf-8'):
     else:
         return cls(s.encode('utf-8'))
 
-
-# The default PSL
-cdef PSL psl = PSL.fromString(pkgutil.get_data('url', 'psl/2016-08-16.psl'))
+def set_psl(rules):
+    global psl
+    psl = PSL.fromString(rules)
 
 
 cdef class URL:

@@ -1,10 +1,12 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import url
+import pkgutil
 import unittest
 
 from nose.tools import assert_equal, assert_not_equal, assert_raises
+
+import url
 
 
 def test_bad_port():
@@ -642,3 +644,22 @@ def test_copy():
     ]
     for example in examples:
         yield test, example
+
+def test_set_psl():
+    '''Can set the PSL to use.'''
+
+    def test(rules, example, pld, tld):
+        try:
+            url.set_psl(rules)
+            assert_equal(url.parse(example).pld, pld)
+            assert_equal(url.parse(example).tld, tld)
+        finally:
+            url.set_psl(pkgutil.get_data('url', 'psl/2016-08-16.psl'))
+
+    examples = [
+        ('uk',    'http://foo.co.uk/', 'co.uk',     'uk'   ),
+        ('co.uk', 'http://foo.co.uk/', 'foo.co.uk', 'co.uk')
+    ]
+
+    for rules, example, pld, tld in examples:
+        yield test, rules, example, pld, tld

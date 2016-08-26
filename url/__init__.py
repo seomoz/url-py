@@ -24,7 +24,7 @@
 '''This is a module for dealing with urls. In particular, sanitizing them.'''
 
 
-from .url import URL
+from .url import URL, set_psl
 
 def parse(url, encoding='utf-8'):
     '''Parse the provided url string and return an URL object'''
