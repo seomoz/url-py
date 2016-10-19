@@ -81,6 +81,9 @@ cleaning parameter and query strings, and a little more sanitization.
     package_data     = {
         'url': ['psl/*']
     },
+    install_requires = [
+        'six'
+    ],
     tests_require    = [
         'coverage',
         'nose'
