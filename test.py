@@ -4,9 +4,11 @@
 import pkgutil
 import unittest
 
-from nose.tools import assert_equal, assert_not_equal, assert_raises
+import six
+from nose.tools import assert_equal, assert_not_equal, assert_raises, assert_is_instance
 
 import url
+from url.url import StringURL, UnicodeURL
 
 
 def test_bad_port():
@@ -25,7 +27,7 @@ def test_bad_port():
 
 def test_deparam_sane():
     def test(bad, good):
-        assert_equal(url.parse(bad).deparam(['c']).utf8, good)
+        assert_equal(url.parse(bad).deparam(['c']).unicode, good)
 
     examples = [
         ('?a=1&b=2&c=3&d=4', '?a=1&b=2&d=4'),   # Maintains order
@@ -48,7 +50,7 @@ def test_deparam_sane():
 
 def test_deparam_case_insensitivity():
     def test(bad, good):
-        assert_equal(url.parse(bad).deparam(['HeLlO']).utf8, good)
+        assert_equal(url.parse(bad).deparam(['HeLlO']).unicode, good)
 
     examples = [
         ('?hELLo=2', ''),
@@ -64,11 +66,10 @@ def test_deparam_case_insensitivity():
 def test_filter_params():
     def function(name, value):
         '''Only keep even-valued parameters.'''
-        print "%s = %s" % (name, value)
         return int(value) % 2
 
     def test(bad, good):
-        assert_equal(url.parse(bad).filter_params(function).utf8, good)
+        assert_equal(url.parse(bad).filter_params(function).unicode, good)
 
     examples = [
         ('?a=1&b=2', '?b=2'),
@@ -83,7 +84,7 @@ def test_filter_params():
 
 def test_lower():
     def test(bad, good):
-        assert_equal(url.parse(bad).utf8, good)
+        assert_equal(url.parse(bad).unicode, good)
 
     examples = [
         ('www.TESTING.coM'    , 'www.testing.com/'   ),
@@ -98,7 +99,7 @@ def test_lower():
 
 def test_abspath():
     def test(bad, good):
-        assert_equal(url.parse(bad).abspath().utf8, good)
+        assert_equal(url.parse(bad).abspath().unicode, good)
 
     examples = [
         ('howdy'           , 'howdy'        ),
@@ -131,9 +132,9 @@ def test_abspath():
 
 def test_escape():
     def test(bad, good):
-        assert_equal(url.parse(bad).escape().utf8, good)
+        assert_equal(url.parse(bad).escape().unicode, good)
         # Escaping should also be idempotent
-        assert_equal(url.parse(bad).escape().escape().utf8, good)
+        assert_equal(url.parse(bad).escape().escape().unicode, good)
 
     examples = [
         ('hello%20and%20how%20are%20you', 'hello%20and%20how%20are%20you'),
@@ -163,10 +164,10 @@ def test_escape():
 
 def test_strict_escape():
     def test(bad, good):
-        assert_equal(url.parse(bad).escape(strict=True).utf8, good)
+        assert_equal(url.parse(bad).escape(strict=True).unicode, good)
         # Escaping should also be idempotent
         assert_equal(
-            url.parse(bad).escape(strict=True).escape(strict=True).utf8, good)
+            url.parse(bad).escape(strict=True).escape(strict=True).unicode, good)
 
     examples = [
         ('http://testing.com/danny%27s pub',
@@ -195,7 +196,7 @@ def test_strict_escape():
 
 def test_userinfo():
     def test(bad, good):
-        assert_equal(url.parse(bad).utf8, good)
+        assert_equal(url.parse(bad).unicode, good)
 
     examples = [
         ('http://user:pass@foo.com',   'http://user:pass@foo.com'),
@@ -352,7 +353,7 @@ def test_str_repr():
 
 def test_canonical():
     def test(bad, good):
-        assert_equal(url.parse(bad).canonical().utf8, good)
+        assert_equal(url.parse(bad).canonical().unicode, good)
 
     examples = [
         ('?b=2&a=1&c=3', '?a=1&b=2&c=3'),
@@ -368,7 +369,7 @@ def test_canonical():
 
 def test_defrag():
     def test(bad, good):
-        assert_equal(url.parse(bad).defrag().utf8, good)
+        assert_equal(url.parse(bad).defrag().unicode, good)
 
     examples = [
         ('foo#bar', 'foo')
@@ -383,7 +384,7 @@ def test_defrag():
 
 def test_deuserinfo():
     def test(bad, good):
-        assert_equal(url.parse(bad).deuserinfo().utf8, good)
+        assert_equal(url.parse(bad).deuserinfo().unicode, good)
 
     examples = [
         ('http://user:pass@foo.com/', 'http://foo.com/'),
@@ -395,10 +396,10 @@ def test_deuserinfo():
 
 def test_punycode():
     def test(uni, puny):
-        assert_equal(url.parse(uni).escape().punycode().utf8, puny)
+        assert_equal(url.parse(uni).escape().punycode().unicode, puny)
         # Also make sure punycode is idempotent
         assert_equal(
-            url.parse(uni).escape().punycode().punycode().utf8, puny)
+            url.parse(uni).escape().punycode().punycode().unicode, puny)
         # Make sure that we can reverse the procedure correctly
         assert_equal(
             url.parse(uni).escape().punycode().unpunycode().unescape(),
@@ -424,10 +425,10 @@ def test_punycode():
 
 def test_punycode_relative_urls():
     def test(example):
-        assert_equal(url.parse(example).escape().punycode().utf8, example)
+        assert_equal(url.parse(example).escape().punycode().unicode, example)
         # Also make sure punycode is idempotent
         assert_equal(
-            url.parse(example).escape().punycode().punycode().utf8, example)
+            url.parse(example).escape().punycode().punycode().unicode, example)
         # Make sure that we can reverse the procedure correctly
         assert_equal(
             url.parse(example).escape().punycode().unpunycode().unescape(),
@@ -488,20 +489,20 @@ def test_punycode_decode_errors():
 
 def test_relative():
     def test(rel, absolute):
-        assert_equal(base.relative(rel).utf8, absolute)
+        assert_equal(base.relative(rel).unicode, absolute)
 
     base = url.parse('http://testing.com/a/b/c')
     examples = [
-        ('../foo'            , 'http://testing.com/a/foo'          ),
-        ('./foo'             , 'http://testing.com/a/b/foo'        ),
-        ('foo'               , 'http://testing.com/a/b/foo'        ),
-        ('/foo'              , 'http://testing.com/foo'            ),
-        ('http://foo.com/bar', 'http://foo.com/bar'                ),
-        (u'/foo'             , 'http://testing.com/foo'            ),
-        (u'/\u200Bfoo'       , 'http://testing.com/\xe2\x80\x8bfoo'),
-        ('../../../../'      , 'http://testing.com/'               ),
+        ('../foo'            , 'http://testing.com/a/foo'     ),
+        ('./foo'             , 'http://testing.com/a/b/foo'   ),
+        ('foo'               , 'http://testing.com/a/b/foo'   ),
+        ('/foo'              , 'http://testing.com/foo'       ),
+        ('http://foo.com/bar', 'http://foo.com/bar'           ),
+        ('/foo'              , 'http://testing.com/foo'       ),
+        (u'/\u200Bfoo'       , u'http://testing.com/\u200Bfoo'),
+        ('../../../../'      , 'http://testing.com/'          ),
         (u'http://www\u200B.tiagopriscostudio.com',
-            'http://www\xe2\x80\x8b.tiagopriscostudio.com/')
+            u'http://www\u200B.tiagopriscostudio.com/')
     ]
 
     for rel, absolute in examples:
@@ -511,12 +512,12 @@ def test_relative():
 def test_relative_javascript():
     rel = 'javascript:console.log("hello")'
     base = 'http://foo.com/path'
-    assert_equal(rel, url.parse(rel).relative_to(base).utf8)
+    assert_equal(rel, url.parse(rel).relative_to(base).unicode)
 
 
 def test_sanitize():
     def test(bad, good):
-        assert_equal(url.parse(bad).sanitize().utf8, good)
+        assert_equal(url.parse(bad).sanitize().unicode, good)
 
     examples = [
         ('../foo/bar none', 'foo/bar%20none')
@@ -531,7 +532,7 @@ def test_sanitize():
 
 def test_remove_default_port():
     def test(query, result):
-        assert_equal(url.parse(query).remove_default_port().utf8, result)
+        assert_equal(url.parse(query).remove_default_port().unicode, result)
 
     examples = [
         ('http://foo.com:80/'  , 'http://foo.com/'     ),
@@ -614,7 +615,7 @@ def test_empty_hostname():
         # Equal to itself
         assert_equal(url.parse(example), example)
         # String representation equal to the provided example
-        assert_equal(url.parse(example).utf8, example)
+        assert_equal(url.parse(example).unicode, example)
 
     examples = [
         'http:///path',
@@ -663,3 +664,50 @@ def test_set_psl():
 
     for rules, example, pld, tld in examples:
         yield test, rules, example, pld, tld
+
+
+def test_component_assignment():
+    parsed = url.parse('http://user@example.com:80/path;params?query#fragment')
+    parsed.scheme = 'https'
+    parsed.userinfo = 'username'
+    parsed.host = 'foo.example.com'
+    parsed.port = 443
+    parsed.path = '/another/path'
+    parsed.params = 'no-params'
+    parsed.query = 'no-query'
+    parsed.fragment = 'no-fragment'
+    assert_equal(
+        parsed.unicode, 
+        'https://username@foo.example.com:443/another/path;no-params?no-query#no-fragment'
+    )
+
+def test_component_assignment_unicode():
+    parsed = url.parse('http://user@example.com:80/path;params?query#fragment')
+    parsed.scheme = u'https'
+    parsed.userinfo = u'username'
+    parsed.host = u'foo.example.com'
+    parsed.port = 443
+    parsed.path = u'/another/path'
+    parsed.params = u'no-params'
+    parsed.query = u'no-query'
+    parsed.fragment = u'no-fragment'
+    assert_equal(
+        parsed.unicode, 
+        'https://username@foo.example.com:443/another/path;no-params?no-query#no-fragment'
+    )
+
+def test_string_url():
+    parsed = StringURL.parse('http://user@example.com:80/path;params?query#fragment')
+    properties = [
+        'scheme', 'host', 'params', 'query', 'fragment', 'userinfo', 'pld', 'tld'
+    ]
+    for prop in properties:
+        yield assert_is_instance, getattr(parsed, prop), six.binary_type
+
+def test_unicode_url():
+    parsed = UnicodeURL.parse('http://user@example.com:80/path;params?query#fragment')
+    properties = [
+        'scheme', 'host', 'params', 'query', 'fragment', 'userinfo', 'pld', 'tld'
+    ]
+    for prop in properties:
+        yield assert_is_instance, getattr(parsed, prop), six.text_type
