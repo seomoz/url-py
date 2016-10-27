@@ -51,7 +51,7 @@ ext_modules = [
 
 setup(
     name             = 'url',
-    version          = '0.3.0rc2',
+    version          = '0.3.0',
     description      = 'URL Parsing',
     long_description = '''
 Some helper functions for parsing URLs, sanitizing them, normalizing them.
@@ -81,6 +81,9 @@ cleaning parameter and query strings, and a little more sanitization.
     package_data     = {
         'url': ['psl/*']
     },
+    install_requires = [
+        'six'
+    ],
     tests_require    = [
         'coverage',
         'nose'
