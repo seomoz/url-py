@@ -1,3 +1,5 @@
+include url/url.pxd
+include url/url.pyx
 include url/url.cpp
 include url/url-cpp/src/*
 include url/url-cpp/include/*
