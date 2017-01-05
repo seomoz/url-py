@@ -48,6 +48,7 @@ cdef extern from "url-cpp/include/url.h" namespace "Url":
         string str() const
 
         # Chainable methods
+        Url& strip()
         Url& abspath()
         Url& relative_to(const string& other)
         Url& relative_to(const Url& other)
