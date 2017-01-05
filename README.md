@@ -86,6 +86,14 @@ effects in sequence:
 In fact, unless the function explicitly returns a string, then the method may
 be chained:
 
+`strip`
+-------
+Removes semantically meaningless excess '?', '&', and ';' characters from query and
+params:
+
+    >>> url.parse('http://example.com/????query=param&&&&foo=bar').strip().utf8
+    'http://example.com/?query=param&foo=bar'
+
 `canonical`
 -----------
 According to the RFC, the order of parameters is not supposed to matter. In
