@@ -27,7 +27,7 @@ def test_bad_port():
 
 def test_deparam_sane():
     def test(bad, good):
-        assert_equal(url.parse(bad).deparam(['c']).unicode, good)
+        assert_equal(url.parse(bad).strip().deparam(['c']).unicode, good)
 
     examples = [
         ('?a=1&b=2&c=3&d=4', '?a=1&b=2&d=4'),   # Maintains order
@@ -664,6 +664,18 @@ def test_set_psl():
 
     for rules, example, pld, tld in examples:
         yield test, rules, example, pld, tld
+
+def test_tel():
+    '''Can parse tel links properly.'''
+    parsed = url.parse('tel:0108202201')
+    assert_equal(parsed.scheme, 'tel')
+    assert_equal(parsed.path, '0108202201')
+
+def test_unknown_protocol():
+    '''Can parse unknown protocol links.'''
+    parsed = url.parse('unknown:0108202201')
+    assert_equal(parsed.scheme, '')
+    assert_equal(parsed.path, 'unknown:0108202201')
 
 
 def test_component_assignment():

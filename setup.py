@@ -51,7 +51,7 @@ ext_modules = [
 
 setup(
     name             = 'url',
-    version          = '0.3.1',
+    version          = '0.4.0',
     description      = 'URL Parsing',
     long_description = '''
 Some helper functions for parsing URLs, sanitizing them, normalizing them.

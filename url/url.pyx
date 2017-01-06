@@ -152,6 +152,14 @@ cdef class StringURL:
         self.ptr.deuserinfo()
         return self
 
+    def strip(self):
+        '''
+        Strip semantically meaningless excess '?', '&', and ';' characters from query
+        and params.
+        '''
+        self.ptr.strip()
+        return self
+
     def abspath(self):
         '''Clear out any '..' and excessive slashes from the path'''
         self.ptr.abspath()
