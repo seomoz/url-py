@@ -69,7 +69,13 @@ cleaning parameter and query strings, and a little more sanitization.
         'Development Status :: 3 - Alpha',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
-        'Topic :: Internet :: WWW/HTTP'
+        'Topic :: Internet :: WWW/HTTP',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
     ],
     ext_modules      = ext_modules,
     packages         = [

@@ -6,6 +6,7 @@ python:
   - 3.3
   - 3.4
   - 3.5
+  - 3.6
 # before_install: scripts/travis/before_install.sh
 install: pip install -r requirements.txt
 script: make test
