@@ -43,28 +43,29 @@ except ImportError:
     ext_files.append('url/url.cpp')
 
 ext_modules = [
-    Extension('url.url', ext_files,
+    Extension(
+        'url.url', ext_files,
         language='c++',
         extra_compile_args=['-std=c++11'],
         include_dirs=['url/url-cpp/include'])
 ]
 
 setup(
-    name             = 'url',
-    version          = '0.4.0',
-    description      = 'URL Parsing',
-    long_description = '''
+    name='url',
+    version='0.4.0',
+    description='URL Parsing',
+    long_description='''
 Some helper functions for parsing URLs, sanitizing them, normalizing them.
 
 This includes support for escaping, unescaping, punycoding, unpunycoding,
 cleaning parameter and query strings, and a little more sanitization.
 ''',
-    author           = 'Dan Lecocq',
-    author_email     = 'dan@moz.com',
-    url              = 'http://github.com/seomoz/url-py',
-    license          = 'MIT',
-    platforms        = 'Posix; MacOS X',
-    classifiers      = [
+    author='Dan Lecocq',
+    author_email='dan@moz.com',
+    url='http://github.com/seomoz/url-py',
+    license='MIT',
+    platforms='Posix; MacOS X',
+    classifiers=[
         'License :: OSI Approved :: MIT License',
         'Development Status :: 3 - Alpha',
         'Environment :: Web Environment',
@@ -77,20 +78,20 @@ cleaning parameter and query strings, and a little more sanitization.
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],
-    ext_modules      = ext_modules,
-    packages         = [
+    ext_modules=ext_modules,
+    packages=[
         'url'
     ],
-    package_dir      = {
+    package_dir={
         'url': 'url'
     },
-    package_data     = {
+    package_data={
         'url': ['psl/*']
     },
-    install_requires = [
+    install_requires=[
         'six'
     ],
-    tests_require    = [
+    tests_require=[
         'coverage',
         'nose'
     ],
