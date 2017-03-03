@@ -32,7 +32,7 @@ pushd /vagrant
 
     # Install a virtualenv
     pip install virtualenv
-    if [ -d venv ]; then
+    if [ ! -d venv ]; then
         virtualenv venv
     fi
     source venv/bin/activate
