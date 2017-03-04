@@ -1,8 +1,9 @@
 *.pyc
+*.so
+.coverage
+.vagrant
+MANIFEST
 build/
 dist/
 url.egg-info/
-.coverage
 venv
-.vagrant
-*.so

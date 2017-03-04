@@ -32,7 +32,7 @@ pushd /vagrant
 
     # Install a virtualenv
     pip install virtualenv
-    if [ -d venv ]; then
+    if [ ! -d venv ]; then
         virtualenv venv
     fi
     source venv/bin/activate
@@ -40,4 +40,9 @@ pushd /vagrant
     # Lastly, our dependencies
     pip install -r requirements.txt
 
+    echo '
+    cd /vagrant
+    # Activate virtualenv
+    . /vagrant/venv/bin/activate
+    ' >> ~/.bash_profile
 popd
