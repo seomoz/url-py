@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import pkgutil
-import unittest
 
 import six
 from nose.tools import assert_equal, assert_not_equal, assert_raises, assert_is_instance
@@ -689,7 +688,7 @@ def test_component_assignment():
     parsed.query = 'no-query'
     parsed.fragment = 'no-fragment'
     assert_equal(
-        parsed.unicode, 
+        parsed.unicode,
         'https://username@foo.example.com:443/another/path;no-params?no-query#no-fragment'
     )
 
@@ -704,7 +703,7 @@ def test_component_assignment_unicode():
     parsed.query = u'no-query'
     parsed.fragment = u'no-fragment'
     assert_equal(
-        parsed.unicode, 
+        parsed.unicode,
         'https://username@foo.example.com:443/another/path;no-params?no-query#no-fragment'
     )
 
