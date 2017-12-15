@@ -4,7 +4,9 @@
 import pkgutil
 
 import six
-from nose.tools import assert_equal, assert_not_equal, assert_raises, assert_is_instance
+from nose.tools import (
+    assert_equal, assert_not_equal, assert_raises, assert_is_instance,
+    raises)
 
 import url
 from url.url import StringURL, UnicodeURL
@@ -663,6 +665,11 @@ def test_set_psl():
 
     for rules, example, pld, tld in examples:
         yield test, rules, example, pld, tld
+
+@raises(ValueError)
+def test_psl_exception():
+    '''Raises ValueError when PSL code throws.'''
+    url.parse('http://empty..com').pld
 
 def test_tel():
     '''Can parse tel links properly.'''
