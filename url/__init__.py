@@ -23,8 +23,6 @@
 
 '''This is a module for dealing with urls. In particular, sanitizing them.'''
 
-import sys
-
 from six import text_type
 if text_type == str:
     from .url import UnicodeURL as URL
