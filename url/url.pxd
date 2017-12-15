@@ -14,7 +14,7 @@ cdef extern from "url-cpp/include/psl.h" namespace "Url":
         @staticmethod
         PSL fromString(const string& str)
         string getTLD(const string& hostname) const
-        string getPLD(const string& hostname) const
+        string getPLD(const string& hostname) except +
 
 
 cdef extern from "url-cpp/include/url.h" namespace "Url":
