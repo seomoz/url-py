@@ -590,6 +590,12 @@ def test_pld():
         yield test, query, result
 
 
+def test_pld_raises():
+    def get_pld(query):
+        return url.parse(query).pld
+    assert_raises(ValueError, get_pld, 'http://site..com')
+
+
 def test_tld():
     def test(query, result):
         assert_equal(url.parse(query).tld, result)
