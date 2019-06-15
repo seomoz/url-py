@@ -3,6 +3,8 @@
 *.pyd
 .coverage
 .vagrant
+.eggs/
+
 MANIFEST
 build/
 dist/
