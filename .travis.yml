@@ -1,12 +1,41 @@
 sudo: required
-dist: trusty
 language: python
-python:
-  - 2.7
-  - 3.3
-  - 3.4
-  - 3.5
-  - 3.6
-# before_install: scripts/travis/before_install.sh
-install: pip install -r requirements.txt
-script: make test
+matrix:
+  include:
+    - name: "Python 2.7 Xenial"
+      python: 2.7
+      dist: xenial
+    - name: "Python 3.5 Xenial"
+      python: 3.5
+      dist: xenial
+    - name: "Python 3.6 Xenial"
+      python: 3.6
+      dist: xenial
+    - name: "Python 3.7 Xenial"
+      python: 3.7
+      dist: xenial
+    - name: "Python 3.8-dev Xenial"
+      python: 3.8-dev
+      dist: xenial
+    - name: "Python 2.7 Trusty"
+      python: 2.7
+      dist: trusty
+    - name: "Python 3.3 Trusty"
+      python: 3.3
+      dist: trusty
+    - name: "Python 3.4 Trusty"
+      python: 3.4
+      dist: trusty
+    - name: "Python 3.5 Trusty"
+      python: 3.5
+      dist: trusty
+    - name: "Python 3.6 Trusty"
+      python: 3.6
+      dist: trusty
+
+
+install:
+  - pip install -r requirements.txt
+  - pip install -e .
+script:
+  - nosetests --verbose
